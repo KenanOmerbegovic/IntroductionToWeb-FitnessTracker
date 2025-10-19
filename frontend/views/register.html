@@ -1,0 +1,91 @@
+<section id="register">
+  <div class="container">
+    <div class="auth-container">
+      <div class="card">
+        <div class="card-header text-center">
+          <h2>Create Your Fitness Account</h2>
+          <p class="text-muted">Start tracking your workouts today</p>
+        </div>
+        
+        <div class="card-body">
+          <form id="register-form">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label">First Name</label>
+                  <input type="text" class="form-input" placeholder="Enter your first name" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label">Last Name</label>
+                  <input type="text" class="form-input" placeholder="Enter your last name" required>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" placeholder="Enter your email" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-input" placeholder="Create a password" required>
+              <div class="text-muted text-small">Must be at least 8 characters long</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <input type="password" class="form-input" placeholder="Confirm your password" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Fitness Goal</label>
+              <select class="form-select" required>
+                <option value="">Select your primary goal</option>
+                <option value="weight_loss">Weight Loss</option>
+                <option value="muscle_gain">Muscle Gain</option>
+                <option value="strength">Strength Training</option>
+                <option value="endurance">Endurance</option>
+                <option value="general">General Fitness</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Experience Level</label>
+              <select class="form-select" required>
+                <option value="">Select your level</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+            
+            <div class="form-check mb-3">
+              <input type="checkbox" class="form-check-input" id="termsAgree" required>
+              <label class="form-check-label" for="termsAgree">
+                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+              </label>
+            </div>
+            
+            <div class="form-check mb-3">
+              <input type="checkbox" class="form-check-input" id="newsletter">
+              <label class="form-check-label" for="newsletter">
+                Send me fitness tips and updates
+              </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-lg btn-full">Create Account</button>
+          </form>
+          
+          <div class="text-center mt-4">
+            <p class="text-muted">Already have an account? 
+              <a href="#login" class="btn btn-link">Sign in here</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
