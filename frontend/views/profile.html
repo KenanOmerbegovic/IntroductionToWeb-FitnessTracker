@@ -1,0 +1,92 @@
+<section id="profile">
+  <div class="container">
+    <div class="profile-container">
+      <div class="card">
+        <h2>Your Profile</h2>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card">
+              <h3>Personal Information</h3>
+              <form id="profile-form">
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-input" value="John Doe">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-input" value="john@example.com">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Fitness Goal</label>
+                  <select class="form-select">
+                    <option>Weight Loss</option>
+                    <option selected>Muscle Gain</option>
+                    <option>Strength Training</option>
+                    <option>General Fitness</option>
+                    <option>Endurance</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Experience Level</label>
+                  <select class="form-select">
+                    <option>Beginner</option>
+                    <option selected>Intermediate</option>
+                    <option>Advanced</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+              </form>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card">
+              <h3>Statistics</h3>
+              <div class="stat-item">
+                <strong>Total Workouts:</strong> 24
+              </div>
+              <div class="stat-item">
+                <strong>Member Since:</strong> October 2025
+              </div>
+              <div class="stat-item">
+                <strong>Favorite Exercise:</strong> Bench Press
+              </div>
+              <div class="stat-item">
+                <strong>Workouts This Month:</strong> 8
+              </div>
+              <div class="stat-item">
+                <strong>Current Streak:</strong> 3 days
+              </div>
+            </div>
+            
+            <div class="card mt-3">
+              <h3>Change Password</h3>
+              <form id="password-form">
+                <div class="form-group">
+                  <label class="form-label">Current Password</label>
+                  <input type="password" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">New Password</label>
+                  <input type="password" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-input">
+                </div>
+                <button type="submit" class="btn btn-warning">Change Password</button>
+              </form>
+            </div>
+
+            <div class="card mt-3">
+              <h3>Danger Zone</h3>
+              <p class="text-muted">Permanently delete your account and all data</p>
+              <button class="btn btn-danger">Delete Account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
