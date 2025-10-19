@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker</title>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Core JS libraries -->
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="js/jquery.spapp.js"></script>
+</head>
+
+<body>
+    <!-- Custom Navigation -->
+    <header class="fitness-header">
+        <nav class="fitness-nav container">
+            <a class="brand-logo" href="#dashboard">
+                <i class="fas fa-dumbbell"></i>
+                Fitness Tracker
+            </a>
+            
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <div class="nav-menu" id="navMenu">
+                <ul class="nav-list">
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#workout-log">LogWorkout</a></li>
+                    <li><a href="#workout-history">History</a></li>
+                    <li><a href="#exercise-library">Exercises</a></li>
+                    <li><a href="#progress-charts">Progress</a></li>
+                    <li><a href="#profile">Profile</a></li>
+                    <li><a href="#login">Login</a></li>
+                    <li><a href="#register">Register</a></li>
+                    <li><a href="#admin-panel" class="text-warning">Admin</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Area - ALL SECTIONS START EMPTY -->
+    <main id="spapp" role="main">
+        <section id="dashboard"></section>
+        <section id="workout-log"></section>
+        <section id="workout-history"></section>
+        <section id="exercise-library"></section>
+        <section id="progress-charts"></section>
+        <section id="profile"></section>
+        <section id="login"></section>
+        <section id="register"></section>
+        <section id="admin-panel"></section>
+        <section id="error_404">
+            <div class="container">
+                <div class="card text-center">
+                    <h1>Error 404 - Page Not Found</h1>
+                    <p>The page you're looking for doesn't exist.</p>
+                    <a href="#dashboard" class="btn btn-primary">Return to Dashboard</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Custom JS -->
+    <script src="js/custom.js"></script>
+    
+    <!-- Navigation Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navToggle = document.getElementById('navToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            if (navToggle && navMenu) {
+                navToggle.addEventListener('click', function() {
+                    navMenu.classList.toggle('active');
+                });
+            }
+            
+            // Close mobile menu when clicking on a link
+            document.querySelectorAll('.nav-list a').forEach(link => {
+                link.addEventListener('click', function() {
+                    navMenu.classList.remove('active');
+                });
+            });
+
+            // Update active nav link based on current hash
+            function updateActiveNav() {
+                const currentHash = window.location.hash.slice(1) || 'dashboard';
+                document.querySelectorAll('.nav-list a').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${currentHash}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // Update nav on hash change
+            window.addEventListener('hashchange', updateActiveNav);
+            
+            // Initial update
+            updateActiveNav();
+        });
+    </script>
+</body>
+</html>
