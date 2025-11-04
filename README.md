@@ -46,3 +46,21 @@ Assets
 ### 3. Database Schema (Planning Only) (1pt)
 
 ![Database Schema](./frontend/assets/Database-schema.png)
+
+## Milestone 2: Backend Setup and CRUD Operations for Initial Entities
+
+### 1. Database Creation  (1pt)
+- sql file containing all tables and test data 
+- stored in the main folder with the frontend and backend folders
+
+
+### 2. DAO Layer (4pts)
+
+- **config.php**
+- **BaseDao.php**
+- **ExerciseCategoryDao.php**
+- **ExerciseDao.php**
+- **PersonalRecordDao.php**
+- **UserDao.php**
+- **WorkoutDao.php**
+- **WorkoutExerciseDao.php**
