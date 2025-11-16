@@ -64,3 +64,29 @@ Assets
 - **UserDao.php**
 - **WorkoutDao.php**
 - **WorkoutExerciseDao.php**
+### Milestone 3: Full CRUD Implementation & OpenAPI Documentation
+### 1. Business Logic Implementation (2pts) ✅
+- Services Layer with Business Logic:
+
+- BaseService.php - Core service functionality
+- ExerciseCategoryService.php 
+- ExerciseService.php 
+- PersonalRecordService.php 
+- UserService.php 
+- WorkoutExerciseService.php 
+- WorkoutService.php 
+- testService.php - used for testing if services work
+
+### 2. Presentation Layer (1pt) ✅
+- FlightPHP Micro-framework Implementation:
+
+### 3. OpenAPI Documentation (2pts) ✅
+- Swagger Integration:
+
+- Swagger
+
+NOTE: Run php -S localhost:8000, In XAMP Turn on (Appache and MySQL)
+
+API Base URL: http://localhost/fitness-tracker/backend/
+
+Swagger Documentation: http://localhost/fitness-tracker/backend/public/v1/docs/
