@@ -11,7 +11,7 @@ class Config
     }
     public static function DB_PORT()
     {
-        return  3306;
+        return  3307;
     }
     public static function DB_USER()
     {
@@ -19,7 +19,7 @@ class Config
     }
     public static function DB_PASSWORD()
     {
-        return 'kenokeno1';
+        return '';
     }
     public static function DB_HOST()
     {
