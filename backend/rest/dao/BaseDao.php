@@ -5,10 +5,12 @@ class BaseDao
 {
     protected $connection;
     private $table_name;
+    private $primary_key;
 
-    public function __construct($table_name)
+    public function __construct($table_name, $primary_key = "id")
     {
         $this->table_name = $table_name;
+        $this->primary_key = $primary_key;
         try {
             $this->connection = new PDO(
                 "mysql:host=" . Config::DB_HOST() . ";dbname=" . Config::DB_NAME() . ";port=" . Config::DB_PORT(),
@@ -39,7 +41,6 @@ class BaseDao
 
     /**
      * Method used to get add entity to database
-     * string $first_name: First name is the first name of the course
      */
     public function add($entity)
     {
@@ -57,34 +58,47 @@ class BaseDao
 
         $stmt = $this->connection->prepare($query);
         $stmt->execute($entity);
-        $entity['id'] = $this->connection->lastInsertId();
+        
+        // Get the last insert ID
+        $last_id = $this->connection->lastInsertId();
+        
+        // Return the entity with the ID
+        $entity[$this->primary_key] = $last_id;
         return $entity;
     }
 
     /**
      * Method used to update entity in database
      */
-    public function update($entity, $id, $id_column = "id")
+    public function update($entity, $id, $id_column = null)
     {
+        if ($id_column === null) {
+            $id_column = $this->primary_key;
+        }
+        
         $query = "UPDATE " . $this->table_name . " SET ";
         foreach ($entity as $column => $value) {
             $query .= $column . "=:" . $column . ", ";
         }
         $query = substr($query, 0, -2);
         $query .= " WHERE " . $id_column . " = :id";
+        
         $stmt = $this->connection->prepare($query);
         $entity['id'] = $id;
         $stmt->execute($entity);
         return $entity;
     }
 
-
     /**
      * Method used to delete entity from database
      */
-    public function delete($id)
+    public function delete($id, $id_column = null)
     {
-        $stmt = $this->connection->prepare("DELETE FROM " . $this->table_name . " WHERE id = :id");
+        if ($id_column === null) {
+            $id_column = $this->primary_key;
+        }
+        
+        $stmt = $this->connection->prepare("DELETE FROM " . $this->table_name . " WHERE " . $id_column . " = :id");
         $stmt->bindValue(':id', $id); #prevent SQL injection
         $stmt->execute();
     }
@@ -99,12 +113,15 @@ class BaseDao
     /**
      * Retrieve a record by its ID.
      */
-    public function getById($id)
+    public function getById($id, $id_column = null)
     {
-        $stmt = $this->connection->prepare("SELECT * FROM " . $this->table_name . " WHERE id = :id");
+        if ($id_column === null) {
+            $id_column = $this->primary_key;
+        }
+        
+        $stmt = $this->connection->prepare("SELECT * FROM " . $this->table_name . " WHERE " . $id_column . " = :id");
         $stmt->bindValue(':id', $id);
         $stmt->execute();
         return $stmt->fetch();
     }
-
 }

@@ -3,23 +3,14 @@
     <div class="dashboard-container">
       <div class="card">
         <h2>Workout Dashboard</h2>
+        <p id="user-greeting">Welcome back!</p>
+        
         <div class="row">
           <div class="col-md-8">
             <div class="card">
               <h3>Recent Workouts</h3>
               <div class="recent-workouts">
-                <div class="workout-item">
-                  <strong>Chest Day</strong> - Oct 15, 2025
-                  <span class="badge">4 exercises</span>
-                </div>
-                <div class="workout-item">
-                  <strong>Leg Day</strong> - Oct 13, 2025
-                  <span class="badge">5 exercises</span>
-                </div>
-                <div class="workout-item">
-                  <strong>Back Day</strong> - Oct 10, 2025
-                  <span class="badge">6 exercises</span>
-                </div>
+                <div class="text-muted">Loading workouts...</div>
               </div>
             </div>
           </div>
@@ -36,13 +27,13 @@
             <div class="card mt-3">
               <h3>This Week</h3>
               <div class="stat-item">
-                <strong>Workouts:</strong> 3
+                <strong>Workouts:</strong> <span id="this-week-count">0</span>
               </div>
               <div class="stat-item">
-                <strong>Exercises:</strong> 15
+                <strong>Exercises:</strong> <span id="total-exercises">0</span>
               </div>
               <div class="stat-item">
-                <strong>Active Days:</strong> 3/7
+                <strong>Active Days:</strong> <span id="active-days">0/7</span>
               </div>
             </div>
           </div>
@@ -51,3 +42,18 @@
     </div>
   </div>
 </section>
+
+<script>
+$(document).ready(function() {
+  // Dashboard-specific initialization
+  if (typeof WorkoutService !== 'undefined') {
+    WorkoutService.getUserWorkouts();
+  }
+  
+  // Load user info
+  const user = AuthService.getCurrentUser();
+  if (user) {
+    $('#user-greeting').text(`Welcome back, ${user.full_name || 'User'}!`);
+  }
+});
+</script>
