@@ -17,8 +17,14 @@ class PersonalRecordService extends BaseService {
     }
     
     public function getRecentRecords($user_id, $limit = 5) {
-        return $this->dao->getRecentRecords($user_id, $limit);
+    try {
+        $records = $this->dao->getRecentRecords($user_id, $limit);
+        return is_array($records) ? $records : [];
+    } catch (Exception $e) {
+        error_log("Service error in getRecentRecords: " . $e->getMessage());
+        return [];
     }
+}
     public function createPersonalRecord($data) {
         if (empty($data['user_id'])) {
             throw new Exception('User ID is required.');

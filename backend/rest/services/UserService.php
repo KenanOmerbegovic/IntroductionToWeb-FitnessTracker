@@ -53,5 +53,22 @@ class UserService extends BaseService {
         
         return $this->update($id, $data);
     }
+    
+    // Override getById to remove password hash
+    public function getById($id) {
+        $user = parent::getById($id);
+        if ($user) {
+            unset($user['password_hash']);
+        }
+        return $user;
+    }
+    
+    // Override getAll to remove password hashes
+    public function getAll() {
+        $users = parent::getAll();
+        foreach ($users as &$user) {
+            unset($user['password_hash']);
+        }
+        return $users;
+    }
 }
-?>

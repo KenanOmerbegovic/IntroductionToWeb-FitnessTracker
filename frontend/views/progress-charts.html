@@ -3,97 +3,57 @@
     <div class="progress-container">
       <div class="card">
         <h2>Progress Tracking</h2>
+        <p id="progress-greeting">Your progress overview</p>
         
-        <div class="row">
-          <div class="col-md-6">
-            <div class="card">
-              <h3>Strength Progress - Bench Press</h3>
-              <div class="chart-placeholder">
-                <p><i class="fas fa-chart-line fa-3x mb-3"></i></p>
-                <p>Bench Press Max Weight Over Time</p>
-                <p class="text-muted">Chart will display here with real data</p>
+        <!-- Workout Statistics - Using IDs that match JavaScript -->
+        <div class="card mt-3">
+          <h3>Workout Statistics</h3>
+          <div class="row">
+            <div class="col-md-3 col-6">
+              <div class="card text-center">
+                <div class="card-body">
+                  <h5 class="card-title">Total Workouts</h5>
+                  <div class="display-4" id="total-workouts-count">0</div>
+                  <p class="text-muted small">All time</p>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card">
-              <h3>Workout Frequency</h3>
-              <div class="chart-placeholder">
-                <p><i class="fas fa-calendar-alt fa-3x mb-3"></i></p>
-                <p>Workouts Per Week</p>
-                <p class="text-muted">Weekly frequency chart coming soon</p>
+            <div class="col-md-3 col-6">
+              <div class="card text-center">
+                <div class="card-body">
+                  <h5 class="card-title">This Week</h5>
+                  <div class="display-4" id="this-week-count">0</div>
+                  <p class="text-muted small">This week's workouts</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="card text-center">
+                <div class="card-body">
+                  <h5 class="card-title">Total Exercises</h5>
+                  <div class="display-4" id="total-exercises">0</div>
+                  <p class="text-muted small">Unique exercises</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="card text-center">
+                <div class="card-body">
+                  <h5 class="card-title">Active Days</h5>
+                  <div class="display-4" id="active-days">0/7</div>
+                  <p class="text-muted small">This week</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Personal Records -->
         <div class="card mt-3">
           <h3>Personal Records</h3>
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Exercise</th>
-                  <th>Max Weight</th>
-                  <th>Reps</th>
-                  <th>Date Achieved</th>
-                  <th>Progress</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Bench Press</td>
-                  <td>80 kg</td>
-                  <td>5</td>
-                  <td>Oct 15, 2025</td>
-                  <td><span class="badge badge-success">+5 kg</span></td>
-                </tr>
-                <tr>
-                  <td>Squats</td>
-                  <td>100 kg</td>
-                  <td>3</td>
-                  <td>Oct 10, 2025</td>
-                  <td><span class="badge badge-success">+10 kg</span></td>
-                </tr>
-                <tr>
-                  <td>Deadlifts</td>
-                  <td>120 kg</td>
-                  <td>1</td>
-                  <td>Oct 8, 2025</td>
-                  <td><span class="badge badge-success">+15 kg</span></td>
-                </tr>
-                <tr>
-                  <td>Shoulder Press</td>
-                  <td>50 kg</td>
-                  <td>6</td>
-                  <td>Oct 5, 2025</td>
-                  <td><span class="badge badge-warning">No change</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="row mt-3">
-          <div class="col-md-4">
-            <div class="card text-center">
-              <h3>Total Workouts</h3>
-              <div class="display-4">24</div>
-              <p class="text-muted">All time</p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="card text-center">
-              <h3>This Month</h3>
-              <div class="display-4">8</div>
-              <p class="text-muted">Workouts in October</p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="card text-center">
-              <h3>Consistency</h3>
-              <div class="display-4">75%</div>
-              <p class="text-muted">Weekly goal achievement</p>
+          <div id="personal-records-list" class="p-3">
+            <div class="text-center text-muted">
+              Loading personal records...
             </div>
           </div>
         </div>

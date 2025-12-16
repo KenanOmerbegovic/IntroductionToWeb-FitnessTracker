@@ -4,84 +4,270 @@
       <div class="card">
         <h2>Exercise Library</h2>
         
-        <div class="form-group">
-          <input type="text" class="form-input" placeholder="Search exercises by name or muscle group...">
-        </div>
-
-        <div class="row">
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-header">
-                <h3>Chest Exercises</h3>
-              </div>
-              <div class="card-body">
-                <div class="exercise-item p-2">Bench Press</div>
-                <div class="exercise-item p-2">Incline Dumbbell Press</div>
-                <div class="exercise-item p-2">Cable Flyes</div>
-                <div class="exercise-item p-2">Push-ups</div>
-                <div class="exercise-item p-2">Chest Dips</div>
-                <div class="exercise-item p-2">Pec Deck</div>
-              </div>
+        <div class="row mb-3">
+          <div class="col-md-8">
+            <div class="input-group">
+              <input type="text" class="form-control" id="exercise-search" placeholder="Search exercises by name or muscle group...">
+              <button class="btn btn-outline-primary" type="button" id="search-exercises">
+                <i class="fas fa-search"></i> Search
+              </button>
             </div>
           </div>
-          
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-header">
-                <h3>Leg Exercises</h3>
-              </div>
-              <div class="card-body">
-                <div class="exercise-item p-2">Squats</div>
-                <div class="exercise-item p-2">Leg Press</div>
-                <div class="exercise-item p-2">Lunges</div>
-                <div class="exercise-item p-2">Deadlifts</div>
-                <div class="exercise-item p-2">Calf Raises</div>
-                <div class="exercise-item p-2">Leg Extensions</div>
-              </div>
-            </div>
+          <div class="col-md-4">
+            <select class="form-select" id="muscle-group-filter">
+              <option value="all">All Muscle Groups</option>
+              <option value="chest">Chest</option>
+              <option value="legs">Legs</option>
+              <option value="back">Back</option>
+              <option value="shoulders">Shoulders</option>
+              <option value="arms">Arms</option>
+              <option value="core">Core</option>
+              <option value="cardio">Cardio</option>
+            </select>
           </div>
         </div>
 
-        <div class="row mt-3">
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-header">
-                <h3>Back Exercises</h3>
-              </div>
-              <div class="card-body">
-                <div class="exercise-item p-2">Pull-ups</div>
-                <div class="exercise-item p-2">Rows</div>
-                <div class="exercise-item p-2">Lat Pulldowns</div>
-                <div class="exercise-item p-2">T-Bar Rows</div>
-                <div class="exercise-item p-2">Face Pulls</div>
-              </div>
+        <div id="exercises-container">
+          <!-- Exercises will be loaded here -->
+          <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading exercises...</span>
             </div>
-          </div>
-          
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-header">
-                <h3>Shoulders & Arms</h3>
-              </div>
-              <div class="card-body">
-                <div class="exercise-item p-2">Shoulder Press</div>
-                <div class="exercise-item p-2">Lateral Raises</div>
-                <div class="exercise-item p-2">Bicep Curls</div>
-                <div class="exercise-item p-2">Tricep Extensions</div>
-                <div class="exercise-item p-2">Shrugs</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-4">
-          <h3>Manage Exercises</h3>
-          <div class="d-flex">
-            <button class="btn btn-success">Add New Exercise</button>
-            <button class="btn btn-secondary ml-2">Import Exercises</button>
+            <p class="mt-2">Loading exercise library...</p>
           </div>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<div class="modal fade" id="exerciseDetailModal" tabindex="-1" aria-labelledby="exerciseDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exerciseDetailModalLabel">Exercise Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="exercise-detail-content">
+        <!-- Details will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="add-to-workout">Add to Current Workout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let allExercises = [];
+let currentExerciseId = null;
+
+function initExerciseLibrary() {
+
+  loadAllExercises();
+  
+
+  document.getElementById('search-exercises').addEventListener('click', filterExercises);
+  document.getElementById('exercise-search').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') filterExercises();
+  });
+  
+
+  document.getElementById('muscle-group-filter').addEventListener('change', filterExercises);
+
+  document.getElementById('add-to-workout').addEventListener('click', addToCurrentWorkout);
+}
+
+function loadAllExercises() {
+  ExerciseService.getAllExercises(function(exercises) {
+    allExercises = exercises || [];
+    displayExercises(allExercises);
+  });
+}
+
+function displayExercises(exercises) {
+  const container = document.getElementById('exercises-container');
+  
+  if (!exercises || exercises.length === 0) {
+    container.innerHTML = `
+      <div class="text-center p-5">
+        <i class="fas fa-dumbbell fa-3x text-muted mb-3"></i>
+        <h4>No exercises found</h4>
+        <p class="text-muted">Try a different search term or filter</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Group by muscle group
+  const groupedExercises = {};
+  exercises.forEach(exercise => {
+    const muscleGroup = exercise.muscle_group || 'other';
+    if (!groupedExercises[muscleGroup]) {
+      groupedExercises[muscleGroup] = [];
+    }
+    groupedExercises[muscleGroup].push(exercise);
+  });
+  
+  let html = '';
+  
+
+  const muscleGroupOrder = ['chest', 'legs', 'back', 'shoulders', 'arms', 'core', 'cardio'];
+  
+  muscleGroupOrder.forEach(muscleGroup => {
+    if (groupedExercises[muscleGroup]) {
+      html += createMuscleGroupSection(muscleGroup, groupedExercises[muscleGroup]);
+      delete groupedExercises[muscleGroup];
+    }
+  });
+  
+
+  Object.keys(groupedExercises).forEach(muscleGroup => {
+    html += createMuscleGroupSection(muscleGroup, groupedExercises[muscleGroup]);
+  });
+  
+  container.innerHTML = html;
+}
+
+function createMuscleGroupSection(muscleGroup, exercises) {
+  const muscleGroupNames = {
+    chest: 'Chest Exercises',
+    legs: 'Leg Exercises',
+    back: 'Back Exercises',
+    shoulders: 'Shoulder Exercises',
+    arms: 'Arm Exercises',
+    core: 'Core Exercises',
+    cardio: 'Cardio Exercises',
+    other: 'Other Exercises'
+  };
+  
+  const displayName = muscleGroupNames[muscleGroup] || 
+    muscleGroup.charAt(0).toUpperCase() + muscleGroup.slice(1) + ' Exercises';
+  
+  let exerciseItems = '';
+  exercises.forEach(exercise => {
+    exerciseItems += `
+      <div class="exercise-item p-3 border rounded mb-2" 
+           onclick="viewExerciseDetails(${exercise.exercise_id})"
+           style="cursor: pointer;">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>${exercise.exercise_name}</strong>
+            <div class="text-muted small">${exercise.description || 'No description available'}</div>
+          </div>
+          <span class="badge bg-light text-dark">${muscleGroup}</span>
+        </div>
+      </div>
+    `;
+  });
+  
+  return `
+    <div class="card mb-3">
+      <div class="card-header">
+        <h3 class="mb-0">${displayName}</h3>
+      </div>
+      <div class="card-body">
+        ${exerciseItems}
+      </div>
+    </div>
+  `;
+}
+
+function filterExercises() {
+  const searchTerm = document.getElementById('exercise-search').value.toLowerCase();
+  const muscleGroupFilter = document.getElementById('muscle-group-filter').value;
+  
+  let filteredExercises = allExercises;
+  
+  // Filter by search term
+  if (searchTerm) {
+    filteredExercises = filteredExercises.filter(exercise => 
+      exercise.exercise_name.toLowerCase().includes(searchTerm) ||
+      (exercise.description && exercise.description.toLowerCase().includes(searchTerm)) ||
+      (exercise.muscle_group && exercise.muscle_group.toLowerCase().includes(searchTerm))
+    );
+  }
+  
+  // Filter by muscle group
+  if (muscleGroupFilter !== 'all') {
+    filteredExercises = filteredExercises.filter(exercise => 
+      exercise.muscle_group === muscleGroupFilter
+    );
+  }
+  
+  displayExercises(filteredExercises);
+}
+
+function viewExerciseDetails(exerciseId) {
+  currentExerciseId = exerciseId;
+  
+  // Find the exercise
+  const exercise = allExercises.find(ex => ex.exercise_id === exerciseId);
+  if (!exercise) return;
+  
+  const modalContent = document.getElementById('exercise-detail-content');
+  
+  const muscleGroups = {
+    chest: 'Chest',
+    legs: 'Legs',
+    back: 'Back',
+    shoulders: 'Shoulders',
+    arms: 'Arms',
+    core: 'Core',
+    cardio: 'Cardio'
+  };
+  
+  modalContent.innerHTML = `
+    <h4>${exercise.exercise_name}</h4>
+    ${exercise.muscle_group ? `<p><strong>Muscle Group:</strong> ${muscleGroups[exercise.muscle_group] || exercise.muscle_group}</p>` : ''}
+    ${exercise.category_name ? `<p><strong>Category:</strong> ${exercise.category_name}</p>` : ''}
+    ${exercise.description ? `<p><strong>Description:</strong> ${exercise.description}</p>` : ''}
+    
+    <div class="mt-4">
+      <h5>How to perform:</h5>
+      <p>${getExerciseInstructions(exercise.muscle_group)}</p>
+    </div>
+  `;
+  
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('exerciseDetailModal'));
+  modal.show();
+}
+
+function getExerciseInstructions(muscleGroup) {
+  const instructions = {
+    chest: 'Lie on a flat bench with feet firmly on the ground. Grip the barbell with hands slightly wider than shoulder-width. Lower the bar to your chest, then push it back up to the starting position.',
+    legs: 'Stand with feet shoulder-width apart. Keeping your back straight, lower your body as if sitting back into a chair. Go as low as you can while maintaining proper form, then return to standing.',
+    back: 'Grip the bar with hands shoulder-width apart. Pull your shoulder blades together and pull the bar towards your chest. Lower with control and repeat.',
+    shoulders: 'Stand or sit with dumbbells at shoulder height. Press the weights overhead until arms are fully extended. Lower with control and repeat.',
+    arms: 'Stand with dumbbells at your sides, palms facing forward. Curl the weights towards your shoulders, keeping elbows close to your body. Lower with control and repeat.',
+    core: 'Lie on your back with knees bent and feet flat on the floor. Place hands behind your head. Engage your core and lift your shoulders off the floor. Lower with control and repeat.',
+    cardio: 'Start with a 5-10 minute warm-up. Maintain a steady pace that allows you to hold a conversation. Gradually increase intensity over time.',
+    default: 'Perform this exercise with proper form. Start with light weights to learn the movement pattern before increasing weight.'
+  };
+  
+  return instructions[muscleGroup] || instructions.default;
+}
+
+function addToCurrentWorkout() {
+  if (!currentExerciseId) return;
+  
+  if (window.location.hash === '#workout-log') {
+    const exercise = allExercises.find(ex => ex.exercise_id === currentExerciseId);
+    if (exercise) {
+      Utils.showToast(`Added ${exercise.exercise_name} to workout`, 'success');
+      
+      const modal = bootstrap.Modal.getInstance(document.getElementById('exerciseDetailModal'));
+      modal.hide();
+      
+      window.location.hash = 'workout-log';
+    }
+  } else {
+    localStorage.setItem('selected_exercise_id', currentExerciseId);
+    window.location.hash = 'workout-log';
+  }
+}
+
+initExerciseLibrary();
+</script>

@@ -1,20 +1,24 @@
 <?php
+require_once __DIR__ . '/../../data/Roles.php';
+
 /**
  * @OA\Get(
  *     path="/users",
  *     tags={"users"},
  *     summary="Get all users",
+ *     security={{"ApiKey": {}}},
  *     @OA\Response(
  *         response=200,
- *         description="Array of all users in the database",
- *         @OA\JsonContent(
- *             type="array",
- *             @OA\Items(ref="#/components/schemas/User")
- *         )
+ *         description="Array of all users in the database"
  *     )
  * )
  */
 Flight::route('GET /users', function() {
+    // Only admin can see all users
+    $user = Flight::get('user');
+    if (!$user || $user['role'] !== Roles::ADMIN) {
+        Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
+    }
     Flight::json(Flight::userService()->getAll());
 });
 
@@ -23,6 +27,7 @@ Flight::route('GET /users', function() {
  *     path="/users/{id}",
  *     tags={"users"},
  *     summary="Get user by ID",
+ *     security={{"ApiKey": {}}},
  *     @OA\Parameter(
  *         name="id",
  *         in="path",
@@ -32,8 +37,7 @@ Flight::route('GET /users', function() {
  *     ),
  *     @OA\Response(
  *         response=200,
- *         description="Returns the user with the given ID",
- *         @OA\JsonContent(ref="#/components/schemas/User")
+ *         description="Returns the user with the given ID"
  *     ),
  *     @OA\Response(
  *         response=404,
@@ -42,12 +46,47 @@ Flight::route('GET /users', function() {
  * )
  */
 Flight::route('GET /users/@id', function($id) {
-    $user = Flight::userService()->getById($id);
-    if ($user) {
-        Flight::json($user);
+    $user = Flight::get('user');
+    
+    // Users can view their own profile, admin can view any
+    if ($user['user_id'] != $id && $user['role'] !== Roles::ADMIN) {
+        Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
+    }
+    
+    $userData = Flight::userService()->getById($id);
+    if ($userData) {
+        // Remove password hash from response
+        unset($userData['password_hash']);
+        Flight::json($userData);
     } else {
         Flight::json(['error' => 'User not found'], 404);
     }
+});
+
+/**
+ * @OA\Delete(
+ *     path="/users/{id}",
+ *     tags={"users"},
+ *     summary="Delete a user",
+ *     security={{"ApiKey": {}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="User ID",
+ *         @OA\Schema(type="integer", example=1)
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="User deleted successfully"
+ *     )
+ * )
+ */
+Flight::route('DELETE /users/@id', function($id) {
+    // Only admin can delete users
+    Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
+    Flight::userService()->delete($id);
+    Flight::json(['message' => 'User deleted successfully']);
 });
 
 /**
@@ -125,6 +164,7 @@ Flight::route('POST /users', function() {
  *     path="/users/{id}",
  *     tags={"users"},
  *     summary="Update an existing user",
+ *     security={{"ApiKey": {}}},
  *     @OA\Parameter(
  *         name="id",
  *         in="path",
@@ -143,8 +183,7 @@ Flight::route('POST /users', function() {
  *     ),
  *     @OA\Response(
  *         response=200,
- *         description="User updated successfully",
- *         @OA\JsonContent(ref="#/components/schemas/User")
+ *         description="User updated successfully"
  *     ),
  *     @OA\Response(
  *         response=400,
@@ -153,37 +192,32 @@ Flight::route('POST /users', function() {
  * )
  */
 Flight::route('PUT /users/@id', function($id) {
+    $user = Flight::get('user');
+    
+    // Users can update their own profile, admin can update any
+    if ($user['user_id'] != $id && $user['role'] !== Roles::ADMIN) {
+        Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
+    }
+    
     $data = Flight::request()->data->getData();
     try {
-        $user = Flight::userService()->updateUser($id, $data);
-        Flight::json($user);
+        // Don't allow role change unless admin
+        if ($user['role'] !== Roles::ADMIN && isset($data['role'])) {
+            unset($data['role']);
+        }
+        
+        // Don't allow password update through this endpoint
+        if (isset($data['password'])) {
+            unset($data['password']);
+        }
+        
+        $updatedUser = Flight::userService()->updateUser($id, $data);
+        Flight::json($updatedUser);
     } catch (Exception $e) {
         Flight::json(['error' => $e->getMessage()], 400);
     }
 });
 
-/**
- * @OA\Delete(
- *     path="/users/{id}",
- *     tags={"users"},
- *     summary="Delete a user",
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="User ID",
- *         @OA\Schema(type="integer", example=1)
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="User deleted successfully"
- *     )
- * )
- */
-Flight::route('DELETE /users/@id', function($id) {
-    Flight::userService()->delete($id);
-    Flight::json(['message' => 'User deleted successfully']);
-});
 
 /**
  * @OA\Get(
@@ -227,4 +261,28 @@ Flight::route('GET /users/goal/@goal', function($goal) {
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
  */
+
+/**
+ * @OA\Get(
+ *     path="/auth/profile",
+ *     tags={"auth"},
+ *     summary="Get current user profile",
+ *     security={{"ApiKey": {}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Current user profile data"
+ *     ),
+ *     @OA\Response(
+ *         response=401,
+ *         description="Unauthorized"
+ *     )
+ * )
+ */
+Flight::route('GET /auth/profile', function() {
+    $user = Flight::get('user');
+    Flight::json([
+        'message' => 'Profile retrieved successfully',
+        'data' => $user
+    ]);
+});
 ?>

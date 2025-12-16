@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../../data/Roles.php';
+
 /**
  * @OA\Get(
  *     path="/exercises",
@@ -6,15 +8,12 @@
  *     summary="Get all exercises",
  *     @OA\Response(
  *         response=200,
- *         description="Array of all exercises in the database",
- *         @OA\JsonContent(
- *             type="array",
- *             @OA\Items(ref="#/components/schemas/Exercise")
- *         )
+ *         description="Array of all exercises in the database"
  *     )
  * )
  */
 Flight::route('GET /exercises', function() {
+    // Public endpoint - no authentication required
     Flight::json(Flight::exerciseService()->getAll());
 });
 
@@ -32,8 +31,7 @@ Flight::route('GET /exercises', function() {
  *     ),
  *     @OA\Response(
  *         response=200,
- *         description="Returns the exercise with the given ID",
- *         @OA\JsonContent(ref="#/components/schemas/Exercise")
+ *         description="Returns the exercise with the given ID"
  *     ),
  *     @OA\Response(
  *         response=404,
@@ -42,6 +40,7 @@ Flight::route('GET /exercises', function() {
  * )
  */
 Flight::route('GET /exercises/@id', function($id) {
+    // Public endpoint - no authentication required
     $exercise = Flight::exerciseService()->getById($id);
     if ($exercise) {
         Flight::json($exercise);
@@ -50,6 +49,127 @@ Flight::route('GET /exercises/@id', function($id) {
     }
 });
 
+/**
+ * @OA\Post(
+ *     path="/exercises",
+ *     tags={"exercises"},
+ *     summary="Create a new exercise",
+ *     security={{"ApiKey": {}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"exercise_name", "muscle_group"},
+ *             @OA\Property(property="exercise_name", type="string", example="Bench Press"),
+ *             @OA\Property(property="description", type="string", example="Flat bench press using a barbell"),
+ *             @OA\Property(property="muscle_group", type="string", example="chest"),
+ *             @OA\Property(property="category_id", type="integer", example=1)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=201,
+ *         description="Exercise created successfully"
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Invalid input"
+ *     )
+ * )
+ */
+Flight::route('POST /exercises', function() {
+    // Only admin and trainer can create exercises
+    $user = Flight::get('user');
+    $allowedRoles = [Roles::ADMIN, Roles::TRAINER];
+    
+    if (!$user || !in_array($user['role'], $allowedRoles)) {
+        Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
+    }
+    
+    $data = Flight::request()->data->getData();
+    try {
+        $exercise = Flight::exerciseService()->createExercise($data);
+        Flight::json($exercise, 201);
+    } catch (Exception $e) {
+        Flight::json(['error' => $e->getMessage()], 400);
+    }
+});
+
+/**
+ * @OA\Put(
+ *     path="/exercises/{id}",
+ *     tags={"exercises"},
+ *     summary="Update an existing exercise",
+ *     security={{"ApiKey": {}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="Exercise ID",
+ *         @OA\Schema(type="integer", example=1)
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="exercise_name", type="string", example="Updated Exercise Name"),
+ *             @OA\Property(property="description", type="string", example="Updated description"),
+ *             @OA\Property(property="muscle_group", type="string", example="back"),
+ *             @OA\Property(property="category_id", type="integer", example=2)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Exercise updated successfully"
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Invalid input"
+ *     )
+ * )
+ */
+Flight::route('PUT /exercises/@id', function($id) {
+    // Only admin and trainer can update exercises
+    $user = Flight::get('user');
+    $allowedRoles = [Roles::ADMIN, Roles::TRAINER];
+    
+    if (!$user || !in_array($user['role'], $allowedRoles)) {
+        Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
+    }
+    
+    $data = Flight::request()->data->getData();
+    try {
+        $exercise = Flight::exerciseService()->update($id, $data);
+        Flight::json($exercise);
+    } catch (Exception $e) {
+        Flight::json(['error' => $e->getMessage()], 400);
+    }
+});
+
+/**
+ * @OA\Delete(
+ *     path="/exercises/{id}",
+ *     tags={"exercises"},
+ *     summary="Delete an exercise",
+ *     security={{"ApiKey": {}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="Exercise ID",
+ *         @OA\Schema(type="integer", example=1)
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Exercise deleted successfully"
+ *     )
+ * )
+ */
+Flight::route('DELETE /exercises/@id', function($id) {
+    // Only admin can delete exercises
+    Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
+    Flight::exerciseService()->delete($id);
+    Flight::json(['message' => 'Exercise deleted successfully']);
+});
+
+// Keep the other GET routes (they're public):
 /**
  * @OA\Get(
  *     path="/exercises/muscle/{muscle_group}",
@@ -64,11 +184,7 @@ Flight::route('GET /exercises/@id', function($id) {
  *     ),
  *     @OA\Response(
  *         response=200,
- *         description="Array of exercises for the specified muscle group",
- *         @OA\JsonContent(
- *             type="array",
- *             @OA\Items(ref="#/components/schemas/Exercise")
- *         )
+ *         description="Array of exercises for the specified muscle group"
  *     )
  * )
  */
@@ -91,11 +207,7 @@ Flight::route('GET /exercises/muscle/@muscle_group', function($muscle_group) {
  *     ),
  *     @OA\Response(
  *         response=200,
- *         description="Array of exercises matching the search term",
- *         @OA\JsonContent(
- *             type="array",
- *             @OA\Items(ref="#/components/schemas/Exercise")
- *         )
+ *         description="Array of exercises matching the search term"
  *     )
  * )
  */
@@ -112,11 +224,7 @@ Flight::route('GET /exercises/search', function() {
  *     summary="Get exercises with category information",
  *     @OA\Response(
  *         response=200,
- *         description="Array of exercises with category details",
- *         @OA\JsonContent(
- *             type="array",
- *             @OA\Items(ref="#/components/schemas/ExerciseWithCategory")
- *         )
+ *         description="Array of exercises with category details"
  *     )
  * )
  */
@@ -124,132 +232,3 @@ Flight::route('GET /exercises/with-categories', function() {
     $exercises = Flight::exerciseService()->getExercisesWithCategory();
     Flight::json($exercises);
 });
-
-/**
- * @OA\Post(
- *     path="/exercises",
- *     tags={"exercises"},
- *     summary="Create a new exercise",
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\JsonContent(
- *             required={"exercise_name", "muscle_group"},
- *             @OA\Property(property="exercise_name", type="string", example="Bench Press"),
- *             @OA\Property(property="description", type="string", example="Flat bench press using a barbell"),
- *             @OA\Property(property="muscle_group", type="string", example="chest"),
- *             @OA\Property(property="category_id", type="integer", example=1)
- *         )
- *     ),
- *     @OA\Response(
- *         response=201,
- *         description="Exercise created successfully",
- *         @OA\JsonContent(ref="#/components/schemas/Exercise")
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Invalid input"
- *     )
- * )
- */
-Flight::route('POST /exercises', function() {
-    $data = Flight::request()->data->getData();
-    try {
-        $exercise = Flight::exerciseService()->createExercise($data);
-        Flight::json($exercise, 201);
-    } catch (Exception $e) {
-        Flight::json(['error' => $e->getMessage()], 400);
-    }
-});
-
-/**
- * @OA\Put(
- *     path="/exercises/{id}",
- *     tags={"exercises"},
- *     summary="Update an existing exercise",
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="Exercise ID",
- *         @OA\Schema(type="integer", example=1)
- *     ),
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\JsonContent(
- *             @OA\Property(property="exercise_name", type="string", example="Updated Exercise Name"),
- *             @OA\Property(property="description", type="string", example="Updated description"),
- *             @OA\Property(property="muscle_group", type="string", example="back"),
- *             @OA\Property(property="category_id", type="integer", example=2)
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Exercise updated successfully",
- *         @OA\JsonContent(ref="#/components/schemas/Exercise")
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Invalid input"
- *     )
- * )
- */
-Flight::route('PUT /exercises/@id', function($id) {
-    $data = Flight::request()->data->getData();
-    try {
-        $exercise = Flight::exerciseService()->update($id, $data);
-        Flight::json($exercise);
-    } catch (Exception $e) {
-        Flight::json(['error' => $e->getMessage()], 400);
-    }
-});
-
-/**
- * @OA\Delete(
- *     path="/exercises/{id}",
- *     tags={"exercises"},
- *     summary="Delete an exercise",
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="Exercise ID",
- *         @OA\Schema(type="integer", example=1)
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Exercise deleted successfully"
- *     )
- * )
- */
-Flight::route('DELETE /exercises/@id', function($id) {
-    Flight::exerciseService()->delete($id);
-    Flight::json(['message' => 'Exercise deleted successfully']);
-});
-
-/**
- * @OA\Schema(
- *     schema="Exercise",
- *     type="object",
- *     @OA\Property(property="exercise_id", type="integer", example=1),
- *     @OA\Property(property="exercise_name", type="string", example="Bench Press"),
- *     @OA\Property(property="description", type="string", example="Flat bench press using a barbell"),
- *     @OA\Property(property="muscle_group", type="string", example="chest"),
- *     @OA\Property(property="category_id", type="integer", example=1),
- *     @OA\Property(property="created_at", type="string", format="date-time")
- * )
- */
-
-/**
- * @OA\Schema(
- *     schema="ExerciseWithCategory",
- *     type="object",
- *     @OA\Property(property="exercise_id", type="integer", example=1),
- *     @OA\Property(property="exercise_name", type="string", example="Bench Press"),
- *     @OA\Property(property="description", type="string", example="Flat bench press using a barbell"),
- *     @OA\Property(property="muscle_group", type="string", example="chest"),
- *     @OA\Property(property="category_id", type="integer", example=1),
- *     @OA\Property(property="category_name", type="string", example="Strength Training"),
- *     @OA\Property(property="created_at", type="string", format="date-time")
- * )
- */
-?>

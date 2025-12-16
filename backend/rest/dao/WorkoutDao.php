@@ -25,9 +25,9 @@ class WorkoutDao extends BaseDao
             ["user_id" => $user_id, "workout_type" => $workout_type]);
     }
 
-    public function getRecentWorkouts($user_id, $limit = 5)
-    {
-        return $this->query("SELECT * FROM workouts WHERE user_id = :user_id ORDER BY workout_date DESC LIMIT :limit", 
-            ["user_id" => $user_id, "limit" => $limit]);
-    }
+    public function getRecentWorkouts($user_id, $limit) {
+    $limit = (int)$limit; // Convert to integer
+    $query = "SELECT * FROM workouts WHERE user_id = ? ORDER BY workout_date DESC LIMIT ?";
+    return $this->query($query, [$user_id, $limit]);
+}
 }
