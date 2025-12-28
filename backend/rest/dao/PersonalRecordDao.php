@@ -27,10 +27,8 @@ class PersonalRecordDao extends BaseDao
                                   ["user_id" => $user_id, "exercise_id" => $exercise_id]);
     }
 
-    // In PersonalRecordDao.php, update getRecentRecords method:
 public function getRecentRecords($user_id, $limit) {
     try {
-        // Cast limit to integer for safety
         $limit = (int)$limit;
         if ($limit <= 0) {
             $limit = 5;
@@ -41,7 +39,7 @@ public function getRecentRecords($user_id, $limit) {
                   JOIN exercises e ON pr.exercise_id = e.exercise_id 
                   WHERE pr.user_id = :user_id 
                   ORDER BY pr.achieved_date DESC 
-                  LIMIT " . $limit;  // Direct concatenation after casting
+                  LIMIT " . $limit;  
         
         return $this->query($query, ["user_id" => $user_id]);
         

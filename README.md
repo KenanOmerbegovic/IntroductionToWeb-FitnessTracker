@@ -90,3 +90,45 @@ NOTE: Run php -S localhost:8000, In XAMP Turn on (Appache and MySQL)
 API Base URL: http://localhost/fitness-tracker/backend/
 
 Swagger Documentation: http://localhost/fitness-tracker/backend/public/v1/docs/
+
+## Milestone 4: Middleware, Authentication, and Authorization
+
+### 1. Authentication and Middleware (1pt) ✅
+
+AuthMiddleware.php - JWT token verification and validation
+
+Roles.php - Roles for users and admin
+
+AuthService.php - Secure authentication (JWT Generation with 24H Validation, Email and Username validation)
+
+Token Reading Issue Fix
+
+### 2. Authentication and Middleware (1pt) ✅
+
+Role Based Access Control
+
+### 3. Frontend Updates (3pts) ✅
+
+## base-service.js
+
+## workout-service.js - Users can create, edit, delete habits
+
+
+## workout-log-service.js Users can create, edit, delete comments or posts
+
+
+## admin-service.js admins can add new exercises, add or delete users 
+
+
+## personal-records-service.js users can view their personal records
+
+# 5. HabitTracker - Milestone 5: Deployment
+
+## Link for the site :
+<h1 align="center" style="font-size: 2.5em; margin: 50px 0;">
+  <a href="https://fitness-tracker.yzz.me" style="color: #007bff; text-decoration: none;">
+     fitness-tracker.yzz.me
+  </a>
+<br>
+</h1>
+- note if theres a cookie issue caused by the provider (because of some chrome extensions it throws a cookie error) try through incognito or disabling cookies

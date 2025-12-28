@@ -39,9 +39,6 @@ class BaseDao
         return reset($results);
     }
 
-    /**
-     * Method used to get add entity to database
-     */
     public function add($entity)
     {
         $query = "INSERT INTO " . $this->table_name . " (";
@@ -59,17 +56,11 @@ class BaseDao
         $stmt = $this->connection->prepare($query);
         $stmt->execute($entity);
         
-        // Get the last insert ID
         $last_id = $this->connection->lastInsertId();
         
-        // Return the entity with the ID
         $entity[$this->primary_key] = $last_id;
         return $entity;
     }
-
-    /**
-     * Method used to update entity in database
-     */
     public function update($entity, $id, $id_column = null)
     {
         if ($id_column === null) {

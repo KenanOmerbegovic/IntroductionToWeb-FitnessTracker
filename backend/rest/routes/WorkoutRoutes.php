@@ -75,13 +75,19 @@ Flight::route('GET /workouts/@id', function($id) {
  *         description="Array of workouts for the specified user"
  *     )
  * )
- */
-Flight::route('GET /workouts/user/@user_id', function($user_id) {
+ */Flight::route('GET /workouts/user/@user_id', function($user_id) {
     $user = Flight::get('user');
+    
+    // Double-check authentication (defensive programming)
+    if (!$user) {
+        Flight::halt(401, json_encode(['error' => 'Authentication required']));
+        return;
+    }
     
     // Users can view their own workouts, admin can view any
     if ($user['user_id'] != $user_id && $user['role'] !== Roles::ADMIN) {
         Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
+        return;
     }
     
     $workouts = Flight::workoutService()->getWorkoutsByUser($user_id);
@@ -213,15 +219,20 @@ Flight::route('DELETE /workouts/@id', function($id) {
     }
     
     $user = Flight::get('user');
-    // Users can delete their own workouts, admin can delete any
     if ($workout['user_id'] != $user['user_id'] && $user['role'] !== Roles::ADMIN) {
         Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
     }
     
-    Flight::workoutService()->delete($id);
-    Flight::json(['message' => 'Workout deleted successfully']);
+    try {
+        Flight::workoutExerciseService()->deleteByWorkout($id);
+        
+        Flight::workoutService()->delete($id);
+        
+        Flight::json(['message' => 'Workout deleted successfully']);
+    } catch (Exception $e) {
+        Flight::json(['error' => $e->getMessage()], 500);
+    }
 });
-
 // Keep other GET routes with authorization:
 /**
  * @OA\Get(

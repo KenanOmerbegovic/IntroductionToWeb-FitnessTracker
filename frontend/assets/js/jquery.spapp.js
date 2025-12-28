@@ -31,7 +31,7 @@
       var route = routes[id];
       var elm = $("#" + id);
 
-      // Hide all sections first
+      
       $("main#spapp > section").hide();
       
       if (!elm || !route) {
@@ -43,15 +43,15 @@
         return;
       }
 
-      // Show current section
+      
       elm.show();
       
       if (!route.load) {
-        // If no external template, just show the section
+        
         route.onCreate();
         route.onReady();
       } else {
-        // Load content from external file
+        
         $.get(config.templateDir + route.load)
           .done(function (data) {
             elm.html(data);

@@ -1,12 +1,12 @@
 var AuthService = {
   init: function () {
-    // Check if user is already logged in
+    
     var token = localStorage.getItem("user_token");
     if (token) {
       window.location.replace("#dashboard");
     }
     
-    // Login form validation
+    
     $("#login-form").validate({
       rules: {
         email: {
@@ -34,7 +34,7 @@ var AuthService = {
       },
     });
     
-    // Register form validation
+    
     $("#register-form").validate({
       rules: {
         email: {
@@ -138,7 +138,7 @@ getCurrentUser: function() {
     }
     
     console.warn("Could not parse user from token:", decoded);
-    return decoded; // Return whatever we have
+    return decoded; 
 },
   isAuthenticated: function() {
     const token = localStorage.getItem("user_token");
@@ -148,35 +148,65 @@ getCurrentUser: function() {
 
   generateMenuItems: function(){
     const token = localStorage.getItem("user_token");
-    const user = Utils.parseJwt(token);
-    
+    const user = this.getCurrentUser(); 
     
     if (!user) {
-      window.location.replace("#login");
-      return;
+        window.location.replace("#login");
+        return;
     }
 
+    console.log("Generating menu for user:", user); 
+    console.log("User role:", user.role); 
+    
     let nav = "";
     
-    // Common items for all authenticated users
+    
     nav += `
-      <li><a href="#dashboard">Dashboard</a></li>
-      <li><a href="#workout-log">Log Workout</a></li>
-      <li><a href="#workout-history">History</a></li>
-      <li><a href="#exercise-library">Exercises</a></li>
-      <li><a href="#progress-charts">Progress</a></li>
-      <li><a href="#profile">Profile</a></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#workout-log">Log Workout</a></li>
+        <li><a href="#workout-history">History</a></li>
+        <li><a href="#exercise-library">Exercises</a></li>
+        <li><a href="#progress-charts">Progress</a></li>
+        <li><a href="#profile">Profile</a></li>
     `;
     
-    // Admin only items
-    if (user.role === Constants.ADMIN_ROLE) {
-      nav += '<li><a href="#admin-panel" class="text-warning">Admin Panel</a></li>';
+    
+    console.log("Checking if user is admin...");
+    console.log("User role:", user.role);
+    console.log("Constants.ADMIN_ROLE:", Constants?.ADMIN_ROLE);
+    console.log("Role match?", user.role === Constants?.ADMIN_ROLE);
+    console.log("Role match (case-insensitive)?", user.role?.toLowerCase() === Constants?.ADMIN_ROLE?.toLowerCase());
+    
+    
+    if (user.role && Constants?.ADMIN_ROLE && 
+        user.role.toLowerCase() === Constants.ADMIN_ROLE.toLowerCase()) {
+        console.log("Adding Admin Panel link to menu");
+        nav += '<li><a href="#admin-panel" class="text-warning"><i class="fas fa-crown me-1"></i>Admin Panel</a></li>';
     }
     
-    // Logout button
-    const userName = user.user?.full_name || user.full_name || 'User';
-    nav += `<li><a href="javascript:void(0)" onclick="AuthService.logout()" class="btn-logout">Logout (${userName})</a></li>`;
+    
+    const userName = user.full_name || user.email?.split('@')[0] || 'User';
+    nav += `<li><a href="javascript:void(0)" onclick="AuthService.logout()" class="btn-logout">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout (${userName})
+            </a></li>`;
     
     $("#tabs").html(nav);
-  }
-};
+    
+    
+    this.highlightActiveLink();
+},
+
+highlightActiveLink: function() {
+    const currentHash = window.location.hash.slice(1) || 'dashboard';
+    
+    setTimeout(() => {
+        document.querySelectorAll('#tabs a').forEach(link => {
+            link.classList.remove('active');
+            const href = link.getAttribute('href');
+            if (href === `#${currentHash}`) {
+                link.classList.add('active');
+            }
+        });
+    }, 100);
+}
+}

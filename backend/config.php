@@ -7,6 +7,34 @@ class Config
 {
     public static function DB_NAME()
     {
+        return 'yzzme_40761894_fitness_tracker';
+    }
+    public static function DB_PORT()
+    {
+        return  3306;
+    }
+    public static function DB_USER()
+    {
+        return 'yzzme_40761894';
+    }
+    public static function DB_PASSWORD()
+    {
+        return 'sUpluVSAJrYg';
+    }
+    public static function DB_HOST()
+    {
+        return 'sql209.yzz.me';
+    }
+    public static function JWT_SECRET(){
+        return 'MyCatSaidMeowWhichMeansHello';
+    }
+}
+/*
+for local
+class Config
+{
+    public static function DB_NAME()
+    {
         return 'fitness_tracker';
     }
     public static function DB_PORT()
@@ -29,3 +57,4 @@ class Config
         return 'MyCatSaidMeowWhichMeansHello';
     }
 }
+*/

@@ -13,7 +13,6 @@ require_once __DIR__ . '/../../data/Roles.php';
  * )
  */
 Flight::route('GET /exercise-categories', function() {
-    // Public endpoint
     Flight::json(Flight::exerciseCategoryService()->getAll());
 });
 
@@ -40,7 +39,6 @@ Flight::route('GET /exercise-categories', function() {
  * )
  */
 Flight::route('GET /exercise-categories/@id', function($id) {
-    // Public endpoint
     $category = Flight::exerciseCategoryService()->getById($id);
     if ($category) {
         Flight::json($category);
@@ -74,7 +72,6 @@ Flight::route('GET /exercise-categories/@id', function($id) {
  * )
  */
 Flight::route('POST /exercise-categories', function() {
-    // Only admin can create categories
     Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
     
     $data = Flight::request()->data->getData();
@@ -117,7 +114,6 @@ Flight::route('POST /exercise-categories', function() {
  * )
  */
 Flight::route('PUT /exercise-categories/@id', function($id) {
-    // Only admin can update categories
     Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
     
     $data = Flight::request()->data->getData();
@@ -149,14 +145,12 @@ Flight::route('PUT /exercise-categories/@id', function($id) {
  * )
  */
 Flight::route('DELETE /exercise-categories/@id', function($id) {
-    // Only admin can delete categories
     Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
     
     Flight::exerciseCategoryService()->delete($id);
     Flight::json(['message' => 'Category deleted successfully']);
 });
 
-// Keep other GET routes (they're public):
 /**
  * @OA\Get(
  *     path="/exercise-categories/name/{name}",

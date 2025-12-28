@@ -165,7 +165,6 @@ Flight::route('POST /auth/change-password', function() {
     $user = Flight::get('user');
     $data = Flight::request()->data->getData();
     
-    // Validate required fields
     if (!isset($data['current_password']) || !isset($data['new_password'])) {
         Flight::json(['error' => 'Current password and new password are required'], 400);
         return;

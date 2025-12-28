@@ -13,13 +13,13 @@ $(document).ready(function () {
         return;
       }
       
-      // Update dashboard with user data
+      
       setTimeout(function() {
         if (typeof WorkoutService !== 'undefined') {
           WorkoutService.getUserWorkouts();
         }
         
-        // Load user profile
+        
         const user = AuthService.getCurrentUser();
         if (user) {
           $('#user-greeting').text(`Welcome back, ${user.full_name || 'User'}!`);
@@ -28,48 +28,42 @@ $(document).ready(function () {
     }
   });
   
-  app.route({ 
+ app.route({ 
     view: "workout-log", 
     load: "workout-log.html",
     onCreate: function() {
-      if (!AuthService.isAuthenticated()) {
-        window.location.replace("#login");
-        return;
-      }
-      
-      setTimeout(function() {
-        if (typeof WorkoutService !== 'undefined') {
-          WorkoutService.init();
-        }
-        if (typeof ExerciseService !== 'undefined') {
-          ExerciseService.init();
+        if (!AuthService.isAuthenticated()) {
+            window.location.replace("#login");
+            return;
         }
         
-        // Set today's date as default
-        const today = new Date().toISOString().split('T')[0];
-        $('#workout-date').val(today);
-      }, 100);
+        setTimeout(function() {
+            if (typeof WorkoutLogService !== 'undefined') {
+                WorkoutLogService.onPageLoad();
+            }
+        }, 100);
     }
-  });
+});
   
   app.route({ 
     view: "workout-history", 
     load: "workout-history.html",
     onCreate: function() {
-       if (typeof WorkoutHistoryService !== 'undefined') {
-        WorkoutHistoryService.onPageLoad();}
-      /*if (!AuthService.isAuthenticated()) {
-        window.location.replace("#login");
-        return;
-      }*/
-      
-      setTimeout(function() {
-        if (typeof WorkoutService !== 'undefined') {
-          WorkoutService.getUserWorkouts();
+        if (!AuthService.isAuthenticated()) {
+            window.location.replace("#login");
+            return;
         }
-      }, 100);
+        
+        setTimeout(function() {
+            
+            if (typeof WorkoutHistoryService !== 'undefined') {
+                WorkoutHistoryService.init();
+            } else {
+                console.error("WorkoutHistoryService not loaded");
+            }
+        }, 100);
     }
-  });
+});
   
   app.route({ 
     view: "exercise-library", 
@@ -98,13 +92,11 @@ $(document).ready(function () {
         return;
       }
       
-      // Load progress data
       setTimeout(function() {
         const user = AuthService.getCurrentUser();
         if (user && typeof RestClient !== 'undefined') {
           RestClient.get(`personal-records/user/${user.user_id}/recent`, function(records) {
             if (records && records.length > 0) {
-              // Update the table with real data
               const tableBody = $('#progress-charts table tbody');
               tableBody.empty();
               
@@ -149,7 +141,7 @@ $(document).ready(function () {
             $("#profile-form").validate({
               submitHandler: function (form) {
                 var profileData = Object.fromEntries(new FormData(form).entries());
-                // TODO: Implement profile update
+                
                 Utils.showToast("Profile update will be implemented", "info");
               },
             });
@@ -194,51 +186,48 @@ $(document).ready(function () {
     }
   });
   
-  app.route({ 
+ app.route({ 
     view: "admin-panel", 
     load: "admin-panel.html",
     onCreate: function() {
-      console.log("Admin panel loaded");
-      if (!AuthService.isAuthenticated()) {
-        window.location.replace("#login");
-        return;
-      }
-      
-      // Check if user is admin
-      const user = AuthService.getCurrentUser();
-      if (!user || user.role !== Constants.ADMIN_ROLE) {
-        Utils.showToast("Access denied: Admin privileges required", "error");
-        window.location.replace("#dashboard");
-        return;
-      }
-      
-      setTimeout(function() {
-        if (typeof RestClient !== 'undefined') {
-          RestClient.get('users', function(users) {
-          });
+        console.log("Admin panel page loaded");
+        
+        if (!AuthService.isAuthenticated()) {
+            window.location.replace("#login");
+            return;
         }
-      }, 100);
+        
+        
+        const user = AuthService.getCurrentUser();
+        if (!user || user.role?.toLowerCase() !== 'admin') {
+            Utils.showToast("Access denied: Admin privileges required", "error");
+            window.location.replace("#dashboard");
+            return;
+        }
+        
+        
+        console.log("Admin access granted");
     }
-  });
+});
 
-  // Run app
+  
   app.run();
   
-  // Initialize dynamic functionality
+  
   initializeSPA();
 });
 
 function initializeSPA() {
   
-  // Check authentication on page load
+  
   setTimeout(function() {
     if (typeof AuthService !== 'undefined') {
       if (AuthService.isAuthenticated()) {
         AuthService.generateMenuItems();
-        // Update active nav link
+        
         updateActiveNav();
       } else {
-        // Show only login/register
+        
         const navHtml = `
           <li><a href="#login">Login</a></li>
           <li><a href="#register">Register</a></li>
@@ -249,7 +238,7 @@ function initializeSPA() {
     }
   }, 500);
 
-  // Exercise adding functionality
+  
   $(document).on('click', '#add-exercise', function() {
       const exerciseHtml = `
           <div class="exercise-entry">
@@ -288,18 +277,18 @@ function initializeSPA() {
       
       $('#exercise-section').append(exerciseHtml);
       
-      // If ExerciseService is loaded, populate the dropdown
+      
       if (typeof ExerciseService !== 'undefined') {
         ExerciseService.loadExercises();
       }
   });
 
-  // Exercise removal functionality
+  
   $(document).on('click', '.remove-exercise', function() {
       $(this).closest('.exercise-entry').remove();
   });
 
-  // Form submissions (for forms without specific handlers)
+  
   $(document).on('submit', '#password-form, #profile-form', function(e) {
       e.preventDefault();
       const formId = $(this).attr('id');
@@ -311,23 +300,23 @@ function initializeSPA() {
       }
   });
 
-  // Global error handler for AJAX calls
+  
   $(document).ajaxError(function(event, jqxhr, settings, thrownError) {
     console.error("AJAX Error:", settings.url, thrownError);
     
-    // Handle 401 Unauthorized
+    
     if (jqxhr.status === 401) {
       Utils.showToast("Session expired. Please login again.", "error");
       AuthService.logout();
     }
     
-    // Handle 403 Forbidden
+    
     if (jqxhr.status === 403) {
       Utils.showToast("Access denied. Insufficient privileges.", "error");
     }
   });
 
-  // Update active nav link based on current hash
+  
   function updateActiveNav() {
       const currentHash = window.location.hash.slice(1) || 'dashboard';
       
@@ -339,10 +328,10 @@ function initializeSPA() {
       });
   }
 
-  // Update nav on hash change
+  
   window.addEventListener('hashchange', updateActiveNav);
   
-  // Global logout handler
+  
   $(document).on('click', '.btn-logout', function(e) {
     e.preventDefault();
     if (typeof AuthService !== 'undefined') {
@@ -350,20 +339,20 @@ function initializeSPA() {
     }
   });
 
-  // Tab functionality for admin panel
+  
   $(document).on('click', '.tab-nav-item', function() {
       const tabId = $(this).data('tab');
       
-      // Remove active class from all tabs and content
+      
       $('.tab-nav-item').removeClass('active');
       $('.tab-content').removeClass('active');
       
-      // Add active class to clicked tab and corresponding content
+      
       $(this).addClass('active');
       $(`#${tabId}-tab`).addClass('active');
   });
   
-  // Load exercises when exercise library page loads
+  
   $(document).on('spapp_ready', function(e, view) {
     if (view === 'exercise-library' && typeof ExerciseService !== 'undefined') {
       setTimeout(function() {
@@ -372,14 +361,14 @@ function initializeSPA() {
     }
     
     if (view === 'workout-log') {
-      // Set today's date as default when page loads
+      
       const today = new Date().toISOString().split('T')[0];
       $('#workout-date').val(today);
     }
   });
 }
 
-// Global utility functions accessible from HTML
+
 function showToast(message, type = 'info') {
   if (typeof Utils !== 'undefined' && Utils.showToast) {
     Utils.showToast(message, type);

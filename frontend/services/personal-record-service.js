@@ -114,7 +114,7 @@ let PersonalRecordService = {
         );
     },
     
-    // Helper to extract best sets from workout data
+    
     extractBestSetsFromWorkouts: function(workouts, exercise_id) {
         let bestSets = [];
         
@@ -139,7 +139,7 @@ let PersonalRecordService = {
             }
         });
         
-        // Sort by weight (descending), then reps (descending)
+        
         bestSets.sort((a, b) => {
             if (b.weight_kg !== a.weight_kg) {
                 return b.weight_kg - a.weight_kg;

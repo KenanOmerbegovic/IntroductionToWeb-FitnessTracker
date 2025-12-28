@@ -1,4 +1,3 @@
-// frontend/services/workout-history-service.js
 let WorkoutHistoryService = {
     workoutsTable: null,
     allWorkouts: [],
@@ -7,7 +6,7 @@ let WorkoutHistoryService = {
     init: function() {
         console.log("WorkoutHistoryService initialized");
         
-        // Setup event listeners
+        
         $(document).ready(() => {
             $('#search-button').off('click').click(() => this.filterWorkouts());
             $('#workout-search').off('keyup').keyup((e) => {
@@ -17,59 +16,79 @@ let WorkoutHistoryService = {
             $('#confirm-delete').off('click').click(() => this.confirmDeleteWorkout());
         });
         
-        // Initialize the page
+        
         this.onPageLoad();
     },
 
     onPageLoad: function() {
         console.log('Workout history page loaded');
         
-        // Check authentication
+        
         const user = UserService.getCurrentUser();
         if (!user) {
             window.location.hash = 'login';
             return;
         }
         
-        // Load workouts
+        
         this.loadWorkouts();
     },
 
-    loadWorkouts: function() {
-        console.log("Loading workouts...");
-        
-        const user = UserService.getCurrentUser();
-        if (!user) {
-            console.error("No user found");
-            Utils.showToast('Please log in to view workout history', 'error');
-            window.location.hash = 'login';
-            return;
-        }
-        
-        Utils.blockUI("Loading workouts...");
-        
-        // Call the correct endpoint - adjust based on your backend
-        RestClient.get(`workouts/user/${user.user_id}`, 
-            (workouts) => {
-                console.log("Workouts received:", workouts);
-                Utils.unblockUI();
-                
-                this.allWorkouts = Array.isArray(workouts) ? workouts : [];
-                
-                if (this.allWorkouts.length === 0) {
-                    this.showNoWorkoutsMessage();
-                } else {
-                    this.initializeDataTable();
-                }
-            }, 
-            (error) => {
-                console.error('Error loading workouts:', error);
-                Utils.unblockUI();
-                Utils.showToast('Failed to load workouts', 'error');
+   loadWorkouts: function() {
+    console.log("Loading workouts...");
+    
+    const user = AuthService.getCurrentUser();
+    if (!user) {
+        console.error("No user found - redirecting to login");
+        Utils.showToast('Please log in to view workout history', 'error');
+        window.location.hash = 'login';
+        return;
+    }
+    
+    console.log("Current user ID:", user.user_id);
+    
+    
+    Utils.blockUI("Loading workouts...");
+    console.log("UI Blocked for loading workouts");
+    
+    
+    RestClient.get(`workouts/user/${user.user_id}`, 
+        (workouts) => {
+            console.log("Workouts API Response received");
+            console.log("Workouts:", workouts);
+            console.log("Is array?", Array.isArray(workouts));
+            
+            
+            Utils.unblockUI();
+            console.log("UI Unblocked");
+            
+            if (!workouts) {
+                console.error("No workouts data received");
                 this.showNoWorkoutsMessage();
+                return;
             }
-        );
-    },
+            
+            this.allWorkouts = Array.isArray(workouts) ? workouts : [];
+            console.log("Processed workouts:", this.allWorkouts.length, "workouts");
+            
+            if (this.allWorkouts.length === 0) {
+                this.showNoWorkoutsMessage();
+            } else {
+                this.initializeDataTable();
+            }
+        }, 
+        (error) => {
+            console.error('Error loading workouts:', error);
+            
+            
+            Utils.unblockUI();
+            console.log("UI Unblocked after error");
+            
+            Utils.showToast('Failed to load workouts', 'error');
+            this.showNoWorkoutsMessage();
+        }
+    );
+},
 
     showNoWorkoutsMessage: function() {
         $('#workouts-table tbody').html(`
@@ -138,11 +157,11 @@ let WorkoutHistoryService = {
                     }
                 },
                 { 
-                    data: 'exercise_count',
-                    title: 'Exercises',
-                    render: (data) => {
-                        return data || '0';
-                    }
+                 data: null,
+                  title: 'Exercises',
+                 render: (data, type, row) => {
+                  return '—';
+                 }
                 },
                 { 
                     data: 'notes',
@@ -249,114 +268,146 @@ let WorkoutHistoryService = {
     },
 
     viewWorkoutDetails: function(workoutId) {
-        this.currentWorkoutId = workoutId;
-        
-        Utils.blockUI("Loading workout details...");
-        
-        RestClient.get(`workouts/${workoutId}`, 
-            (workout) => {
+    this.currentWorkoutId = workoutId;
+    
+    Utils.blockUI("Loading workout details...");
+    
+    RestClient.get(`workouts/${workoutId}`, 
+        (workout) => {
+            if (!workout) {
                 Utils.unblockUI();
-                
-                if (!workout) {
-                    Utils.showToast("Workout not found", "error");
-                    return;
-                }
-                
-                const modalContent = $('#workout-detail-content');
-                RestClient.get(`workout-exercises/workout/${workoutId}`, 
-                    (exercises) => {
-                        let exercisesHtml = '';
-                        if (exercises && exercises.length > 0) {
-                            exercisesHtml = `
-                                <h5 class="mt-3">Exercises:</h5>
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Exercise</th>
-                                                <th>Sets</th>
-                                                <th>Reps</th>
-                                                <th>Weight</th>
-                                                <th>Notes</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${exercises.map(exercise => `
-                                                <tr>
-                                                    <td>${exercise.exercise_name || 'Unknown Exercise'}</td>
-                                                    <td>${exercise.sets || 0}</td>
-                                                    <td>${exercise.reps || 0}</td>
-                                                    <td>${exercise.weight_kg ? exercise.weight_kg + ' kg' : '—'}</td>
-                                                    <td>${exercise.notes || '—'}</td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            `;
-                        } else {
-                            exercisesHtml = '<p class="text-muted">No exercises recorded for this workout.</p>';
-                        }
-                        
-                        modalContent.html(`
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong>Date:</strong> ${new Date(workout.workout_date).toLocaleDateString()}</p>
-                                    <p><strong>Type:</strong> <span class="badge bg-primary">${workout.workout_type}</span></p>
-                                    <p><strong>Duration:</strong> ${workout.duration_minutes ? workout.duration_minutes + ' minutes' : 'N/A'}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p><strong>Exercises Count:</strong> ${exercises ? exercises.length : 0}</p>
-                                    <p><strong>Created:</strong> ${new Date(workout.created_at).toLocaleString()}</p>
-                                    ${workout.updated_at ? `<p><strong>Last Updated:</strong> ${new Date(workout.updated_at).toLocaleString()}</p>` : ''}
-                                </div>
-                            </div>
-                            
-                            <div class="mt-3">
-                                <h5>Workout Notes:</h5>
-                                <div class="card">
-                                    <div class="card-body">
-                                        ${workout.notes ? workout.notes : '<p class="text-muted mb-0">No notes provided.</p>'}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            ${exercisesHtml}
-                        `);
-                        
-                        const modal = new bootstrap.Modal(document.getElementById('workoutDetailModal'));
-                        modal.show();
-                    },
-                    (error) => {
-                        Utils.unblockUI();
-                        console.error("Failed to load exercises:", error);
-                        
-
-                        modalContent.html(`
-                            <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-triangle"></i> Could not load exercises for this workout.
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong>Date:</strong> ${new Date(workout.workout_date).toLocaleDateString()}</p>
-                                    <p><strong>Type:</strong> <span class="badge bg-primary">${workout.workout_type}</span></p>
-                                    <p><strong>Duration:</strong> ${workout.duration_minutes ? workout.duration_minutes + ' minutes' : 'N/A'}</p>
-                                </div>
-                            </div>
-                        `);
-                        
-                        const modal = new bootstrap.Modal(document.getElementById('workoutDetailModal'));
-                        modal.show();
-                    }
-                );
-            },
-            (error) => {
-                Utils.unblockUI();
-                Utils.showToast("Failed to load workout details", "error");
-                console.error("Error loading workout:", error);
+                Utils.showToast("Workout not found", "error");
+                return;
             }
-        );
-    },
+            
+            
+            RestClient.get(`workout-exercises/workout/${workoutId}`, 
+                (exercises) => {
+                    Utils.unblockUI();
+                    
+                    
+                    let exercisesHtml = '';
+                    if (exercises && exercises.length > 0) {
+                        exercisesHtml = `
+                            <h5 class="mt-3">Exercises:</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Exercise</th>
+                                            <th>Sets</th>
+                                            <th>Reps</th>
+                                            <th>Weight</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${exercises.map(exercise => `
+                                            <tr>
+                                                <td>${exercise.exercise_name || 'Unknown Exercise'}</td>
+                                                <td>${exercise.sets || 0}</td>
+                                                <td>${exercise.reps || 0}</td>
+                                                <td>${exercise.weight_kg ? exercise.weight_kg + ' kg' : '—'}</td>
+                                                <td>${exercise.notes || '—'}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    } else {
+                        exercisesHtml = '<p class="text-muted">No exercises recorded for this workout.</p>';
+                    }
+                    
+                    
+                    const editButton = `<button class="btn btn-warning mt-3" onclick="WorkoutHistoryService.editWorkout(${workoutId})">
+                        <i class="fas fa-edit"></i> Edit Workout
+                    </button>`;
+                    
+                    
+                    $('#workout-detail-content').html(`
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Date:</strong> ${new Date(workout.workout_date).toLocaleDateString('en-US', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}</p>
+                                <p><strong>Type:</strong> <span class="badge bg-primary">${workout.workout_type}</span></p>
+                                <p><strong>Duration:</strong> ${workout.duration_minutes ? workout.duration_minutes + ' minutes' : 'N/A'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Created:</strong> ${new Date(workout.created_at).toLocaleString()}</p>
+                                ${workout.updated_at ? `<p><strong>Last Updated:</strong> ${new Date(workout.updated_at).toLocaleString()}</p>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <h5>Workout Notes:</h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    ${workout.notes ? workout.notes : '<p class="text-muted mb-0">No notes provided.</p>'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${exercisesHtml}
+                        
+                        <div class="mt-4">
+                            ${editButton}
+                            <button type="button" class="btn btn-secondary mt-3 ms-2" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    `);
+                    
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('workoutDetailModal'));
+                    modal.show();
+                },
+                (error) => {
+                    Utils.unblockUI();
+                    console.error("Failed to load exercises:", error);
+                    
+                    
+                    $('#workout-detail-content').html(`
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Could not load exercises for this workout.
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Date:</strong> ${new Date(workout.workout_date).toLocaleDateString()}</p>
+                                <p><strong>Type:</strong> <span class="badge bg-primary">${workout.workout_type}</span></p>
+                                <p><strong>Duration:</strong> ${workout.duration_minutes ? workout.duration_minutes + ' minutes' : 'N/A'}</p>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h5>Workout Notes:</h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    ${workout.notes ? workout.notes : '<p class="text-muted mb-0">No notes provided.</p>'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button class="btn btn-warning" onclick="WorkoutHistoryService.editWorkout(${workoutId})">
+                                <i class="fas fa-edit"></i> Edit Workout
+                            </button>
+                            <button type="button" class="btn btn-secondary mt-3 ms-2" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    `);
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('workoutDetailModal'));
+                    modal.show();
+                }
+            );
+        },
+        (error) => {
+            Utils.unblockUI();
+            Utils.showToast("Failed to load workout details", "error");
+            console.error("Error loading workout:", error);
+        }
+    );
+},
 
     editWorkout: function(workoutId) {
         localStorage.setItem('edit_workout_id', workoutId);
@@ -364,32 +415,96 @@ let WorkoutHistoryService = {
     },
 
     deleteWorkout: function(workoutId) {
-        this.currentWorkoutId = workoutId;
-        $('#workout-to-delete').val(workoutId);
-        
-        const modal = new bootstrap.Modal(document.getElementById('deleteWorkoutModal'));
-        modal.show();
-    },
+    console.log("=== DELETE WORKOUT START ===");
+    console.log("Workout ID:", workoutId);
+    
+    
+    this.currentWorkoutId = workoutId;
+    
+    
+    const deleteInput = document.getElementById('workout-to-delete');
+    if (deleteInput) {
+        deleteInput.value = workoutId;
+    }
+    
+    
+    const modalElement = document.getElementById('deleteWorkoutModal');
+    
+    
+    modalElement.style.position = 'fixed';
+    modalElement.style.top = '0';
+    modalElement.style.left = '0';
+    modalElement.style.width = '100%';
+    modalElement.style.height = '100%';
+    modalElement.style.zIndex = '99999';
+    modalElement.style.display = 'none';
+    modalElement.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    
+    
+    let backdrop = document.querySelector('.modal-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade';
+        document.body.appendChild(backdrop);
+    }
+    
+    
+    modalElement.style.display = 'block';
+    modalElement.classList.add('show');
+    backdrop.classList.add('show');
+    document.body.classList.add('modal-open');
+    
+    
+    const modalDialog = modalElement.querySelector('.modal-dialog');
+    if (modalDialog) {
+        modalDialog.style.margin = 'auto';
+        modalDialog.style.marginTop = '20vh';
+    }
+    
+    console.log("=== DELETE WORKOUT END ===");
+},
 
-    confirmDeleteWorkout: function() {
-        const workoutId = $('#workout-to-delete').val();
-        
-        if (!workoutId) {
-            Utils.showToast("No workout selected for deletion", "error");
-            return;
-        }
-        
-        Utils.blockUI("Deleting workout...");
-        
-        RestClient.delete(`workouts/${workoutId}`, null, () => {
+confirmDeleteWorkout: function() {
+    const workoutId = $('#workout-to-delete').val();
+    
+    if (!workoutId) {
+        Utils.showToast("No workout selected for deletion", "error");
+        return;
+    }
+    
+    console.log("Confirming deletion of workout:", workoutId);
+    
+    Utils.blockUI("Deleting workout...");
+    
+    RestClient.delete(`workouts/${workoutId}`, null, 
+        (response) => {
             Utils.unblockUI();
+            console.log("Delete successful:", response);
             
-            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteWorkoutModal'));
-            modal.hide();
+            
+            const modalElement = document.getElementById('deleteWorkoutModal');
+            if (modalElement) {
+                
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+                } else {
+                    
+                    modalElement.style.display = 'none';
+                    modalElement.classList.remove('show');
+                    
+                    
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                }
+            }
+            
             
             this.allWorkouts = this.allWorkouts.filter(w => w.workout_id != workoutId);
             
-            if (this.workoutsTable) {
+            
+            if (this.workoutsTable && $.fn.DataTable.isDataTable('#workouts-table')) {
                 this.workoutsTable.clear();
                 this.workoutsTable.rows.add(this.allWorkouts);
                 this.workoutsTable.draw();
@@ -397,12 +512,16 @@ let WorkoutHistoryService = {
             }
             
             Utils.showToast('Workout deleted successfully', 'success');
-        }, (error) => {
+        }, 
+        (error) => {
             Utils.unblockUI();
+            console.error("Delete failed:", error);
+            
             const errorMsg = error.responseJSON?.error || error.responseText || 'Failed to delete workout';
             Utils.showToast(errorMsg, 'error');
-        });
-    },
+        }
+    );
+},
 
     setupPage: function() {
         console.log("Setting up workout history page");

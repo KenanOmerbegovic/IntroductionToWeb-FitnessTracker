@@ -5,7 +5,7 @@ class WorkoutDao extends BaseDao
 {
     public function __construct()
     {
-        parent::__construct('workouts');
+        parent::__construct('workouts', 'workout_id');
     }
 
     public function getWorkoutsByUser($user_id)
@@ -26,8 +26,8 @@ class WorkoutDao extends BaseDao
     }
 
     public function getRecentWorkouts($user_id, $limit) {
-    $limit = (int)$limit; // Convert to integer
-    $query = "SELECT * FROM workouts WHERE user_id = ? ORDER BY workout_date DESC LIMIT ?";
-    return $this->query($query, [$user_id, $limit]);
-}
+        $limit = (int)$limit;
+        $query = "SELECT * FROM workouts WHERE user_id = ? ORDER BY workout_date DESC LIMIT ?";
+        return $this->query($query, [$user_id, $limit]);
+    }
 }
