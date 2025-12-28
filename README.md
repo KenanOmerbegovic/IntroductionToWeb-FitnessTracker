@@ -1,4 +1,4 @@
-# 5. HabitTracker - Milestone 5: Deployment
+# 5. Fitness-Tracker - Milestone 5: Deployment
 
 ## Link for the site :
 <h1 align="center" style="font-size: 2.5em; margin: 50px 0;">
@@ -123,7 +123,7 @@ Role Based Access Control
 
 ## base-service.js
 
-## workout-service.js - Users can create, edit, delete habits
+## workout-service.js - Users can create, edit, delete workouts
 
 
 ## workout-log-service.js Users can create, edit, delete comments or posts
