@@ -1,3 +1,15 @@
+# 5. HabitTracker - Milestone 5: Deployment
+
+## Link for the site :
+<h1 align="center" style="font-size: 2.5em; margin: 50px 0;">
+  <a href="https://fitness-tracker.yzz.me" style="color: #007bff; text-decoration: none;">
+     fitness-tracker.yzz.me
+  </a>
+<br>
+</h1>
+- note if theres a cookie issue caused by the provider (because of some chrome extensions it throws a cookie error) try through incognito or disabling cookies
+
+
 # FitnessTracker - Milestone 1 Completion
 
 ## Milestone 1: Static Frontend Development
@@ -122,13 +134,3 @@ Role Based Access Control
 
 ## personal-records-service.js users can view their personal records
 
-# 5. HabitTracker - Milestone 5: Deployment
-
-## Link for the site :
-<h1 align="center" style="font-size: 2.5em; margin: 50px 0;">
-  <a href="https://fitness-tracker.yzz.me" style="color: #007bff; text-decoration: none;">
-     fitness-tracker.yzz.me
-  </a>
-<br>
-</h1>
-- note if theres a cookie issue caused by the provider (because of some chrome extensions it throws a cookie error) try through incognito or disabling cookies
