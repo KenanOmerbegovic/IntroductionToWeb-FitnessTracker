@@ -16,8 +16,11 @@
  *     url="http://localhost/fitness-tracker/backend",
  *     description="Local development server"
  * )
- */
-
+*@OA\Server(
+*url="https://fitnesstracker.yzz.me/fitness-tracker/backend",
+*description="Production API server"
+*),
+*/
 /**
  * @OA\SecurityScheme(
  *     securityScheme="ApiKeyAuth",

@@ -14,7 +14,7 @@ require_once __DIR__ . '/../../data/Roles.php';
  * )
  */
 Flight::route('GET /users', function() {
-    // Only admin can see all users
+    
     $user = Flight::get('user');
     if (!$user || $user['role'] !== Roles::ADMIN) {
         Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
@@ -48,14 +48,14 @@ Flight::route('GET /users', function() {
 Flight::route('GET /users/@id', function($id) {
     $user = Flight::get('user');
     
-    // Users can view their own profile, admin can view any
+    
     if ($user['user_id'] != $id && $user['role'] !== Roles::ADMIN) {
         Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
     }
     
     $userData = Flight::userService()->getById($id);
     if ($userData) {
-        // Remove password hash from response
+        
         unset($userData['password_hash']);
         Flight::json($userData);
     } else {
@@ -83,7 +83,7 @@ Flight::route('GET /users/@id', function($id) {
  * )
  */
 Flight::route('DELETE /users/@id', function($id) {
-    // Only admin can delete users
+    
     Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
     Flight::userService()->delete($id);
     Flight::json(['message' => 'User deleted successfully']);
@@ -194,19 +194,19 @@ Flight::route('POST /users', function() {
 Flight::route('PUT /users/@id', function($id) {
     $user = Flight::get('user');
     
-    // Users can update their own profile, admin can update any
+    
     if ($user['user_id'] != $id && $user['role'] !== Roles::ADMIN) {
         Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
     }
     
     $data = Flight::request()->data->getData();
     try {
-        // Don't allow role change unless admin
+        
         if ($user['role'] !== Roles::ADMIN && isset($data['role'])) {
             unset($data['role']);
         }
         
-        // Don't allow password update through this endpoint
+        
         if (isset($data['password'])) {
             unset($data['password']);
         }

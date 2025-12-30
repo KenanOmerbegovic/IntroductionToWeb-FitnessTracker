@@ -3,7 +3,7 @@ let ExerciseService = {
     this.loadExercises();
     this.loadCategories();
     
-    // Setup search functionality
+    
     $('#exercise-search').on('keyup', function() {
       const searchTerm = $(this).val().toLowerCase();
       ExerciseService.filterExercises(searchTerm);
@@ -48,10 +48,10 @@ let ExerciseService = {
   },
 
   updateExerciseLibrary: function(groupedExercises) {
-    // Clear existing content
+    
     $('.exercise-category-section').remove();
     
-    // Create sections for each muscle group
+    
     Object.keys(groupedExercises).forEach(muscleGroup => {
       const sectionId = muscleGroup.toLowerCase().replace(/\s+/g, '-');
       const exercisesHtml = groupedExercises[muscleGroup].map(ex => 
@@ -89,7 +89,7 @@ let ExerciseService = {
       $(this).toggle(exerciseText.includes(searchTerm));
     });
     
-    // Also hide/show entire sections if empty
+    
     $('.exercise-category-section').each(function() {
       const hasVisible = $(this).find('.exercise-item:visible').length > 0;
       $(this).toggle(hasVisible);
@@ -111,15 +111,15 @@ let ExerciseService = {
   },
 
   addToWorkout: function(exerciseId) {
-    // Find the exercise
+    
     const exercise = ExerciseService.allExercises.find(e => e.exercise_id == exerciseId);
     if (!exercise) return;
     
     Utils.showToast(`Added ${exercise.exercise_name} to workout`, "success");
     
-    // If on workout log page, auto-add it
+    
     if (window.location.hash === '#workout-log') {
-      // Add a new exercise entry with this exercise pre-selected
+      
       const exerciseHtml = `
         <div class="exercise-entry">
           <div class="row">
@@ -158,13 +158,13 @@ let ExerciseService = {
     }
   },
 
-  // Admin functions
+  
   addExercise: function(exerciseData) {
     Utils.blockUI("Adding exercise...");
     RestClient.post('exercises', exerciseData, function(response) {
       Utils.unblockUI();
       Utils.showToast("Exercise added successfully", "success");
-      ExerciseService.loadExercises(); // Refresh list
+      ExerciseService.loadExercises(); 
     }, function(error) {
       Utils.unblockUI();
       Utils.showToast(error.responseJSON?.error || "Failed to add exercise", "error");

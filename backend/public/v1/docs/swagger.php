@@ -5,7 +5,7 @@ require __DIR__ . '/../../../vendor/autoload.php';
 if($_SERVER['SERVER_NAME'] == 'localhost' || $_SERVER['SERVER_NAME'] == '127.0.0.1'){
     define('BASE_URL', 'http://localhost/fitness-tracker/backend');
 } else {
-    define('BASE_URL', 'http://localhost/fitness-tracker/backend');
+    define('BASE_URL', 'http://fitness-tracker.yzz.me/fitness-tracker/backend');
 }
 $openapi = \OpenApi\Generator::scan([
     __DIR__ . '/doc_setup.php',

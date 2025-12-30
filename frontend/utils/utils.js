@@ -26,10 +26,10 @@ let Utils = {
         }
       },
       
-      // Helper to show toast messages
+      
       showToast: function(message, type = 'success') {
         
-        // Create simple toast notification
+        
         const toastId = 'toast-' + Date.now();
         const toastHtml = `
           <div id="${toastId}" class="toast-notification toast-${type}" 
@@ -40,7 +40,7 @@ let Utils = {
         
         $('body').append(toastHtml);
         
-        // Remove after 3 seconds
+        
         setTimeout(() => {
           $('#' + toastId).fadeOut(300, function() {
             $(this).remove();
@@ -48,28 +48,74 @@ let Utils = {
         }, 3000);
       },
       
-      // Block/Unblock UI
-      blockUI: function(message = 'Loading...') {
+      
+     
+blockUI: function(message = 'Loading...') {
+    
+    this.unblockUI();
+    
+    
+    setTimeout(() => {
         $('body').append(`
-          <div id="block-ui" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
-            <div style="background:white;padding:20px;border-radius:10px;text-align:center;">
-              <div class="spinner" style="border:4px solid #f3f3f3;border-top:4px solid #667eea;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:0 auto 10px;"></div>
-              <style>
-                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-              </style>
-              <h3 style="margin:0;">${message}</h3>
+            <div id="block-ui" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">
+                <div style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 10px;
+                    text-align: center;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                    max-width: 300px;
+                    width: 80%;
+                ">
+                    <div class="spinner" style="
+                        border: 4px solid #f3f3f3;
+                        border-top: 4px solid #667eea;
+                        border-radius: 50%;
+                        width: 50px;
+                        height: 50px;
+                        animation: spin 1s linear infinite;
+                        margin: 0 auto 15px;
+                    "></div>
+                    <style>
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    </style>
+                    <h3 style="margin: 0; color: #333; font-size: 18px;">${message}</h3>
+                </div>
             </div>
-          </div>
         `);
-      },
-      
-      unblockUI: function() {
-        $('#block-ui').fadeOut(200, function() {
-          $(this).remove();
+    }, 10);
+},
+
+unblockUI: function() {
+    
+    $('[id^="block-ui"]').each(function() {
+        $(this).fadeOut(200, function() {
+            $(this).remove();
         });
-      },
+    });
+    
+    
+    $('.block-overlay, .loading-overlay, .blockui-overlay').remove();
+    
+    
+    $('body').css('overflow', '');
+},
       
-      // Debug helper
+      
       debug: function(label, data) {
         console.log(`[DEBUG ${label}]`, data);
       }

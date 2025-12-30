@@ -1,6 +1,6 @@
 let WorkoutService = {
   init: function () {
-    // Initialize workout form validation
+    
     $("#workout-form").validate({
       rules: {
         "workout_date": "required",
@@ -12,10 +12,8 @@ let WorkoutService = {
       },
     });
     
-    // Load exercises for dropdown
     WorkoutService.loadExercisesForDropdown();
     
-    // Load user's workouts
     WorkoutService.getUserWorkouts();
   },
   getWorkoutById: function(workoutId, callback, error_callback) {
@@ -34,7 +32,6 @@ viewWorkout: function(workoutId) {
     Utils.blockUI("Loading workout details...");
     
     RestClient.get(`workouts/${workoutId}`, function(workout){
-        // Also load exercises for this workout
         RestClient.get(`workout-exercises/workout/${workoutId}`, function(exercises) {
             Utils.unblockUI();
             
@@ -53,7 +50,6 @@ viewWorkout: function(workoutId) {
                 exercisesHtml += '</div>';
             }
             
-            // Show modal or update view
             $('#workout-details').html(`
                 <div class="card">
                     <div class="card-header">
@@ -133,9 +129,9 @@ deleteWorkout: function(workoutId, callback, error_callback) {
         `<option value="${ex.exercise_id}">${ex.exercise_name} (${ex.muscle_group})</option>`
       ).join('');
       
-      // Update all exercise dropdowns
+      
       $('.exercise-name').each(function() {
-        if ($(this).find('option').length <= 1) { // Only if not already populated
+        if ($(this).find('option').length <= 1) { 
           $(this).html(`<option value="">Select exercise...</option>${options}`);
         }
       });
@@ -158,16 +154,16 @@ deleteWorkout: function(workoutId, callback, error_callback) {
     const exercises = [];
     let exerciseIndex = 0;
     
-    // Handle array-style form data
+    
     Object.keys(workout).forEach(key => {
-        // Check for exercises[0][exercise_id] pattern
+        
         const match = key.match(/exercises\[(\d+)\]\[(\w+)\]/);
         if (match) {
             const index = parseInt(match[1]);
             const field = match[2];
             const value = workout[key];
             
-            // Initialize exercise object if it doesn't exist
+            
             if (!exercises[index]) {
                 exercises[index] = {};
             }
@@ -186,7 +182,7 @@ deleteWorkout: function(workoutId, callback, error_callback) {
         const workoutId = response.workout_id || response.data?.workout_id;
         
         if (validExercises.length > 0 && workoutId) {
-            // Save each exercise
+            
             let exercisesSaved = 0;
             const totalExercises = validExercises.length;
             
@@ -290,7 +286,6 @@ deleteWorkout: function(workoutId, callback, error_callback) {
   },
 
   calculateWorkoutStats: function(workouts) {
-    // Update this week's stats
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     
@@ -299,9 +294,9 @@ deleteWorkout: function(workoutId, callback, error_callback) {
     ).length;
     
     const totalExercises = workouts.length * 3;
-    const totalWorkouts = workouts.length; // Estimate
+    const totalWorkouts = workouts.length; 
     
-    // Update dashboard stats
+    
     $('#total-workouts-count').text(totalWorkouts);
     $('#this-week-count').text(thisWeekWorkouts);
     $('#total-exercises').text(totalExercises);
@@ -311,7 +306,7 @@ deleteWorkout: function(workoutId, callback, error_callback) {
   viewWorkout: function(id) {
     Utils.blockUI("Loading workout details...");
     RestClient.get(`workouts/${id}`, function(workout){
-      // Also load exercises for this workout
+      
       RestClient.get(`workout-exercises/workout/${id}`, function(exercises) {
         Utils.unblockUI();
         
@@ -324,7 +319,7 @@ deleteWorkout: function(workoutId, callback, error_callback) {
           exercisesHtml += '</ul>';
         }
         
-        // Show modal or update view
+        
         $('#workout-details').html(`
           <div class="card">
             <h3>${workout.workout_type} - ${new Date(workout.workout_date).toLocaleDateString()}</h3>
@@ -347,7 +342,7 @@ deleteWorkout: function(workoutId, callback, error_callback) {
       RestClient.delete(`workouts/${id}`, null, function(response) {
         Utils.unblockUI();
         Utils.showToast("Workout deleted successfully", "success");
-        WorkoutService.getUserWorkouts(); // Refresh list
+        WorkoutService.getUserWorkouts(); 
       }, function(error) {
         Utils.unblockUI();
         Utils.showToast(error.responseJSON?.error || "Failed to delete workout", "error");

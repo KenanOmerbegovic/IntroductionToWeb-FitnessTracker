@@ -41,7 +41,7 @@
             <div class="card">
               <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">User Management</h4>
-                <button class="btn btn-sm btn-primary" onclick="showAddUserModal()">
+                <button class="btn btn-sm btn-primary" id="add-user-btn">
                   <i class="fas fa-plus me-1"></i> Add User
                 </button>
               </div>
@@ -59,7 +59,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- Users will be loaded here -->
+                    <!-- Users will be loaded here by AdminService -->
                   </tbody>
                 </table>
               </div>
@@ -71,7 +71,7 @@
             <div class="card">
               <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">Exercise Management</h4>
-                <button class="btn btn-sm btn-primary" onclick="showAddExerciseModal()">
+                <button class="btn btn-sm btn-primary" id="add-exercise-btn">
                   <i class="fas fa-plus me-1"></i> Add Exercise
                 </button>
               </div>
@@ -83,13 +83,13 @@
                         <th>ID</th>
                         <th>Name</th>
                         <th>Muscle Group</th>
-                        <th>Category</th>
+                        <th>Category ID</th>
                         <th>Created</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <!-- Exercises will be loaded here -->
+                      <!-- Exercises will be loaded here by AdminService -->
                     </tbody>
                   </table>
                 </div>
@@ -102,7 +102,7 @@
             <div class="card">
               <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">Category Management</h4>
-                <button class="btn btn-sm btn-primary" onclick="showAddCategoryModal()">
+                <button class="btn btn-sm btn-primary" id="add-category-btn">
                   <i class="fas fa-plus me-1"></i> Add Category
                 </button>
               </div>
@@ -119,7 +119,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <!-- Categories will be loaded here -->
+                      <!-- Categories will be loaded here by AdminService -->
                     </tbody>
                   </table>
                 </div>
@@ -228,7 +228,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="addUser()">Add User</button>
+        <button type="button" class="btn btn-primary" id="submit-add-user">Add User</button>
       </div>
     </div>
   </div>
@@ -269,13 +269,14 @@
             <label class="form-label">Category</label>
             <select class="form-select" name="category_id">
               <option value="">Select category</option>
+              <!-- Categories will be loaded dynamically -->
             </select>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="addExercise()">Add Exercise</button>
+        <button type="button" class="btn btn-primary" id="submit-add-exercise">Add Exercise</button>
       </div>
     </div>
   </div>
@@ -303,7 +304,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="addCategory()">Add Category</button>
+        <button type="button" class="btn btn-primary" id="submit-add-category">Add Category</button>
       </div>
     </div>
   </div>
@@ -327,340 +328,3 @@
     </div>
   </div>
 </div>
-
-<script>
-let deleteCallback = null;
-let deleteId = null;
-let deleteType = null;
-
-function initAdminPanel() {
-  // Check if user is admin
-  const user = UserService.getCurrentUser();
-  if (!user || user.role !== Constants.ADMIN_ROLE) {
-    Utils.showToast('Access denied. Admin only.', 'error');
-    window.location.hash = 'dashboard';
-    return;
-  }
-  
-  loadAdminData();
-  
-
-  document.getElementById('confirm-delete-item').addEventListener('click', executeDelete);
-}
-
-function loadAdminData() {
-
-  loadUsers();
-  loadExercises();
-  loadCategories();
-  loadAnalytics();
-}
-
-function loadUsers() {
-
-  const sampleUsers = [
-    { user_id: 1, full_name: 'John Doe', email: 'john@example.com', role: 'user', created_at: '2024-01-15', active: true },
-    { user_id: 2, full_name: 'Jane Smith', email: 'jane@example.com', role: 'admin', created_at: '2024-01-10', active: true },
-    { user_id: 3, full_name: 'Bob Johnson', email: 'bob@example.com', role: 'user', created_at: '2024-01-05', active: false },
-    { user_id: 4, full_name: 'Alice Williams', email: 'alice@example.com', role: 'trainer', created_at: '2024-01-01', active: true }
-  ];
-  
-  if ($.fn.DataTable.isDataTable('#users-table')) {
-    $('#users-table').DataTable().destroy();
-  }
-  
-  $('#users-table').DataTable({
-    data: sampleUsers,
-    columns: [
-      { data: 'user_id' },
-      { data: 'full_name' },
-      { data: 'email' },
-      { 
-        data: 'role',
-        render: function(data) {
-          const roles = {
-            user: '<span class="badge bg-secondary">User</span>',
-            admin: '<span class="badge bg-danger">Admin</span>',
-            trainer: '<span class="badge bg-warning">Trainer</span>'
-          };
-          return roles[data] || data;
-        }
-      },
-      { 
-        data: 'created_at',
-        render: function(data) {
-          return new Date(data).toLocaleDateString();
-        }
-      },
-      { 
-        data: 'active',
-        render: function(data) {
-          return data 
-            ? '<span class="badge bg-success">Active</span>' 
-            : '<span class="badge bg-secondary">Inactive</span>';
-        }
-      },
-      { 
-        data: 'user_id',
-        render: function(data) {
-          return `
-            <div class="btn-group btn-group-sm">
-              <button class="btn btn-primary" onclick="editUser(${data})">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="btn btn-danger" onclick="confirmDelete('user', ${data}, 'user')">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          `;
-        }
-      }
-    ]
-  });
-}
-
-function loadExercises() {
-  ExerciseService.getAllExercises(function(exercises) {
-    if ($.fn.DataTable.isDataTable('#exercises-table')) {
-      $('#exercises-table').DataTable().destroy();
-    }
-    
-    $('#exercises-table').DataTable({
-      data: exercises,
-      columns: [
-        { data: 'exercise_id' },
-        { data: 'exercise_name' },
-        { data: 'muscle_group' },
-        { data: 'category_name' },
-        { 
-          data: 'created_at',
-          render: function(data) {
-            return data ? new Date(data).toLocaleDateString() : '—';
-          }
-        },
-        { 
-          data: 'exercise_id',
-          render: function(data) {
-            return `
-              <div class="btn-group btn-group-sm">
-                <button class="btn btn-primary" onclick="editExercise(${data})">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-danger" onclick="confirmDelete('exercise', ${data}, 'exercise')">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            `;
-          }
-        }
-      ]
-    });
-  });
-}
-
-function loadCategories() {
-  // In a real implementation, fetch categories via API
-  const sampleCategories = [
-    { category_id: 1, category_name: 'Strength Training', description: 'Exercises focused on building strength', exercise_count: 15 },
-    { category_id: 2, category_name: 'Cardio', description: 'Cardiovascular exercises', exercise_count: 8 },
-    { category_id: 3, category_name: 'Flexibility', description: 'Stretching and mobility exercises', exercise_count: 5 }
-  ];
-  
-  if ($.fn.DataTable.isDataTable('#categories-table')) {
-    $('#categories-table').DataTable().destroy();
-  }
-  
-  $('#categories-table').DataTable({
-    data: sampleCategories,
-    columns: [
-      { data: 'category_id' },
-      { data: 'category_name' },
-      { data: 'description' },
-      { data: 'exercise_count' },
-      { 
-        data: 'category_id',
-        render: function(data) {
-          return `
-            <div class="btn-group btn-group-sm">
-              <button class="btn btn-primary" onclick="editCategory(${data})">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="btn btn-danger" onclick="confirmDelete('category', ${data}, 'category')">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          `;
-        }
-      }
-    ]
-  });
-}
-
-function loadAnalytics() {
- 
-  document.getElementById('total-users').textContent = '42';
-  document.getElementById('admin-total-workouts').textContent = '156';
-  document.getElementById('active-today').textContent = '8';
-  document.getElementById('avg-workouts-user').textContent = '3.7';
-  
-
-  const activityContainer = document.getElementById('recent-activity');
-  const activities = [
-    { user: 'John Doe', action: 'logged a chest workout', time: '2 hours ago' },
-    { user: 'Jane Smith', action: 'updated profile', time: '4 hours ago' },
-    { user: 'Bob Johnson', action: 'set a new personal record', time: '1 day ago' },
-    { user: 'Alice Williams', action: 'created a custom workout', time: '2 days ago' },
-    { user: 'Mike Brown', action: 'joined the platform', time: '3 days ago' }
-  ];
-  
-  let activityHtml = '';
-  activities.forEach(activity => {
-    activityHtml += `
-      <div class="activity-item d-flex align-items-center mb-2 p-2 border-bottom">
-        <div class="flex-grow-1">
-          <strong>${activity.user}</strong> ${activity.action}
-          <div class="text-muted small">${activity.time}</div>
-        </div>
-      </div>
-    `;
-  });
-  
-  activityContainer.innerHTML = activityHtml;
-}
-
-function showAddUserModal() {
-  const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
-  modal.show();
-}
-
-function addUser() {
-  const form = document.getElementById('add-user-form');
-  const formData = new FormData(form);
-  const data = Object.fromEntries(formData.entries());
-  
-
-  Utils.showToast('User added successfully', 'success');
-  
-
-  const modal = bootstrap.Modal.getInstance(document.getElementById('addUserModal'));
-  modal.hide();
-  form.reset();
-
-  loadUsers();
-}
-
-function editUser(userId) {
-  Utils.showToast(`Edit user ${userId} - Feature coming soon`, 'info');
-}
-
-function showAddExerciseModal() {
-
-  loadCategoriesForExerciseModal();
-  
-  const modal = new bootstrap.Modal(document.getElementById('addExerciseModal'));
-  modal.show();
-}
-
-function loadCategoriesForExerciseModal() {
-  const select = document.querySelector('#add-exercise-form select[name="category_id"]');
-  select.innerHTML = '<option value="">Select category</option>';
-
-  const categories = [
-    { category_id: 1, category_name: 'Strength Training' },
-    { category_id: 2, category_name: 'Cardio' },
-    { category_id: 3, category_name: 'Flexibility' }
-  ];
-  
-  categories.forEach(category => {
-    const option = document.createElement('option');
-    option.value = category.category_id;
-    option.textContent = category.category_name;
-    select.appendChild(option);
-  });
-}
-
-function addExercise() {
-  const form = document.getElementById('add-exercise-form');
-  const formData = new FormData(form);
-  const data = Object.fromEntries(formData.entries());
-  
-
-  Utils.showToast('Exercise added successfully', 'success');
-
-  const modal = bootstrap.Modal.getInstance(document.getElementById('addExerciseModal'));
-  modal.hide();
-  form.reset();
-  
-
-  loadExercises();
-}
-
-function editExercise(exerciseId) {
-  Utils.showToast(`Edit exercise ${exerciseId} - Feature coming soon`, 'info');
-}
-
-function showAddCategoryModal() {
-  const modal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
-  modal.show();
-}
-
-function addCategory() {
-  const form = document.getElementById('add-category-form');
-  const formData = new FormData(form);
-  const data = Object.fromEntries(formData.entries());
-  
-
-  Utils.showToast('Category added successfully', 'success');
-  
-
-  const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
-  modal.hide();
-  form.reset();
-  
-
-  loadCategories();
-}
-
-function editCategory(categoryId) {
-  Utils.showToast(`Edit category ${categoryId} - Feature coming soon`, 'info');
-}
-
-function confirmDelete(type, id, itemName) {
-  deleteType = type;
-  deleteId = id;
-  
-  const message = document.getElementById('delete-confirm-message');
-  message.textContent = `Are you sure you want to delete this ${itemName}? This action cannot be undone.`;
-  
-  const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-  modal.show();
-}
-
-function executeDelete() {
-  if (!deleteType || !deleteId) return;
-  
-  Utils.showToast(`${deleteType.charAt(0).toUpperCase() + deleteType.slice(1)} deleted successfully`, 'success');
-  
-  const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
-  modal.hide();
-  
-  switch (deleteType) {
-    case 'user':
-      loadUsers();
-      break;
-    case 'exercise':
-      loadExercises();
-      break;
-    case 'category':
-      loadCategories();
-      break;
-  }
-  
-  // Reset delete variables
-  deleteType = null;
-  deleteId = null;
-}
-
-// Initialize admin panel
-initAdminPanel();
-</script>

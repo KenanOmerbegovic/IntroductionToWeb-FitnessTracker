@@ -77,7 +77,6 @@ Flight::route('GET /personal-records/@id', function($id) {
 Flight::route('GET /personal-records/user/@user_id', function($user_id) {
     $user = Flight::get('user');
     
-    // Users can view their own records, admin can view any
     if ($user['user_id'] != $user_id && $user['role'] !== Roles::ADMIN) {
         Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
     }
@@ -118,7 +117,7 @@ Flight::route('POST /personal-records', function() {
     $user = Flight::get('user');
     $data = Flight::request()->data->getData();
     
-    // Users can only create records for themselves, admin can create for anyone
+     
     if (!isset($data['user_id'])) {
         $data['user_id'] = $user['user_id'];
     } else if ($data['user_id'] != $user['user_id'] && $user['role'] !== Roles::ADMIN) {
@@ -172,7 +171,6 @@ Flight::route('PUT /personal-records/@id', function($id) {
     }
     
     $user = Flight::get('user');
-    // Users can update their own records, admin can update any
     if ($record['user_id'] != $user['user_id'] && $user['role'] !== Roles::ADMIN) {
         Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
     }
@@ -212,7 +210,6 @@ Flight::route('DELETE /personal-records/@id', function($id) {
     }
     
     $user = Flight::get('user');
-    // Users can delete their own records, admin can delete any
     if ($record['user_id'] != $user['user_id'] && $user['role'] !== Roles::ADMIN) {
         Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
     }
@@ -254,7 +251,7 @@ Flight::route('DELETE /personal-records/@id', function($id) {
 Flight::route('GET /personal-records/user/@user_id/exercise/@exercise_id', function($user_id, $exercise_id) {
     $user = Flight::get('user');
     
-    // Users can view their own records, admin can view any
+
     if ($user['user_id'] != $user_id && $user['role'] !== Roles::ADMIN) {
         Flight::halt(403, json_encode(['error' => 'Access denied: insufficient privileges']));
     }
@@ -316,10 +313,9 @@ Flight::route('GET /personal-records/user/@user_id/recent', function($user_id) {
             $limit = 5;
         }
         
-        // Get records
+
         $records = Flight::personalRecordService()->getRecentRecords($user_id, $limit);
         
-        // Always return an array, even if empty
         Flight::json($records);
         
     } catch (Exception $e) {

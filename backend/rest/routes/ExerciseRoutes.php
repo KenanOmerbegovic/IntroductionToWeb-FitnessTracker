@@ -13,7 +13,6 @@ require_once __DIR__ . '/../../data/Roles.php';
  * )
  */
 Flight::route('GET /exercises', function() {
-    // Public endpoint - no authentication required
     Flight::json(Flight::exerciseService()->getAll());
 });
 
@@ -40,7 +39,6 @@ Flight::route('GET /exercises', function() {
  * )
  */
 Flight::route('GET /exercises/@id', function($id) {
-    // Public endpoint - no authentication required
     $exercise = Flight::exerciseService()->getById($id);
     if ($exercise) {
         Flight::json($exercise);
@@ -76,7 +74,6 @@ Flight::route('GET /exercises/@id', function($id) {
  * )
  */
 Flight::route('POST /exercises', function() {
-    // Only admin and trainer can create exercises
     $user = Flight::get('user');
     $allowedRoles = [Roles::ADMIN, Roles::TRAINER];
     
@@ -126,7 +123,6 @@ Flight::route('POST /exercises', function() {
  * )
  */
 Flight::route('PUT /exercises/@id', function($id) {
-    // Only admin and trainer can update exercises
     $user = Flight::get('user');
     $allowedRoles = [Roles::ADMIN, Roles::TRAINER];
     
@@ -163,13 +159,11 @@ Flight::route('PUT /exercises/@id', function($id) {
  * )
  */
 Flight::route('DELETE /exercises/@id', function($id) {
-    // Only admin can delete exercises
     Flight::auth_middleware()->authorizeRole(Roles::ADMIN);
     Flight::exerciseService()->delete($id);
     Flight::json(['message' => 'Exercise deleted successfully']);
 });
 
-// Keep the other GET routes (they're public):
 /**
  * @OA\Get(
  *     path="/exercises/muscle/{muscle_group}",

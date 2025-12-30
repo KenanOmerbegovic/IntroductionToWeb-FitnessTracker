@@ -1,6 +1,6 @@
 let UserService = {
   init: function () {
-    // Profile form validation
+    
     $("#profile-form").validate({
       rules: {
         full_name: "required",
@@ -15,7 +15,6 @@ let UserService = {
       },
     });
     
-    // Password form validation
     $("#password-form").validate({
       rules: {
         current_password: "required",
@@ -34,7 +33,7 @@ let UserService = {
       },
     });
     
-    // Load user data
+    
     UserService.loadUserProfile();
   },
 
@@ -59,17 +58,17 @@ let UserService = {
             $('#profile-experience-level').val(userData.experience_level || 'beginner');
         }
         
-        // FIX: Handle the date properly
+        
         if ($('#member-since').length) {
             if (userData.created_at) {
-                // Parse the date string from database
+                
                 let createdDate;
                 if (typeof userData.created_at === 'string') {
                     createdDate = new Date(userData.created_at);
                 } else if (typeof userData.created_at === 'number') {
-                    createdDate = new Date(userData.created_at * 1000); // If it's a Unix timestamp
+                    createdDate = new Date(userData.created_at * 1000); 
                 } else {
-                    createdDate = new Date(); // Fallback
+                    createdDate = new Date(); 
                 }
                 
                 if (!isNaN(createdDate.getTime())) {
@@ -82,7 +81,7 @@ let UserService = {
             }
         }
         
-        // Update profile stats
+        
         UserService.loadUserStats(user.user_id);
     }, function(error) {
         console.error("Failed to load user profile:", error);
@@ -94,7 +93,7 @@ let UserService = {
         
         const totalWorkouts = workouts.length;
         
-        // Calculate this month's workouts
+        
         const now = new Date();
         const thisMonth = workouts.filter(w => {
             if (!w.workout_date) return false;
@@ -103,7 +102,7 @@ let UserService = {
                    workoutDate.getFullYear() === now.getFullYear();
         }).length;
         
-        // Update UI if elements exist
+        
         if ($('#total-workouts').length) {
             $('#total-workouts').text(totalWorkouts);
         }
@@ -111,9 +110,9 @@ let UserService = {
             $('#workouts-this-month').text(thisMonth);
         }
         
-        // Find favorite exercise
+        
         if (workouts.length > 0 && $('#favorite-exercise').length) {
-            // Take the most recent workout type
+            
             const recentWorkout = workouts[0];
             $('#favorite-exercise').text(recentWorkout.workout_type || 'Various');
         } else if ($('#favorite-exercise').length) {
@@ -122,13 +121,13 @@ let UserService = {
         
     }, function(error) {
         console.warn("Could not load workouts for stats:", error);
-        // Set defaults
+        
         if ($('#total-workouts').length) $('#total-workouts').text('0');
         if ($('#workouts-this-month').length) $('#workouts-this-month').text('0');
         if ($('#favorite-exercise').length) $('#favorite-exercise').text('No data');
     });
     
-    // Skip personal records for now - endpoint has issues
+    
     if ($('#current-streak').length) {
         $('#current-streak').text("Track your first PR!");
     }
@@ -143,7 +142,7 @@ let UserService = {
       Utils.unblockUI();
       Utils.showToast("Profile updated successfully!", "success");
       
-      // Update stored user data
+      
       const token = localStorage.getItem("user_token");
       const decoded = Utils.parseJwt(token);
       localStorage.setItem("user_data", JSON.stringify({...decoded, ...profileData}));
@@ -155,7 +154,7 @@ let UserService = {
   },
 
   changePassword: function(passwordData) {
-    // Note: You'll need to implement a password change endpoint in your backend
+    
     Utils.showToast("Password change endpoint not implemented yet", "info");
   },
   getCurrentUser: function() {

@@ -706,3 +706,11 @@ main#spapp {
 .table-responsive {
     overflow-x: auto;
 }
+
+#deleteWorkoutModal {
+    z-index: 99999 !important;
+}
+
+.modal-backdrop {
+    z-index: 99998 !important;
+}
